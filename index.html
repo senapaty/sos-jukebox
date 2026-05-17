@@ -93,31 +93,48 @@ function IOSDevice({ children }) {
 }
 
 // ── HUD bar (top overlay on bar scene) ──
-function HUD({ fans, superfans }) {
+function HUD({ fans, superfans, weeklyMins = 18, weeklyGoal = 60 }) {
+  const pct = Math.min(100, Math.round((weeklyMins / weeklyGoal) * 100));
   return (
     <div style={{ position:'absolute', top:0, left:0, right:0, zIndex:10,
-      padding:'50px 16px 10px',
-      background:'linear-gradient(to bottom, rgba(15,8,2,0.85) 0%, rgba(15,8,2,0.4) 70%, transparent 100%)',
-      display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-      {/* Fans */}
-      <div style={{ display:'flex', alignItems:'center', gap:8,
-        background:T.hudBg, border:`1px solid ${T.hudBorder}`,
-        borderRadius:20, padding:'6px 14px 6px 10px',
-        backdropFilter:'blur(8px)', WebkitBackdropFilter:'blur(8px)' }}>
-        <span style={{ fontSize:16 }}>👥</span>
-        <span style={{ fontSize:16, fontWeight:900, color:T.gold }}>{fans}</span>
-        <span style={{ fontSize:9, fontWeight:700, color:T.muted, textTransform:'uppercase', letterSpacing:0.5 }}>Fans</span>
+      padding:'48px 12px 8px',
+      background:'linear-gradient(to bottom, rgba(15,8,2,0.92) 0%, rgba(15,8,2,0.55) 78%, transparent 100%)' }}>
+      {/* Row 1: Fans + Superfans */}
+      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:5 }}>
+        {/* Fans */}
+        <div style={{ display:'flex', alignItems:'center', gap:6,
+          background:T.hudBg, border:`1px solid ${T.hudBorder}`,
+          borderRadius:20, padding:'5px 12px 5px 10px',
+          backdropFilter:'blur(8px)', WebkitBackdropFilter:'blur(8px)' }}>
+          <span style={{ fontSize:14 }}>👥</span>
+          <span style={{ fontSize:15, fontWeight:900, color:T.gold }}>{fans}</span>
+          <span style={{ fontSize:8, fontWeight:700, color:T.muted, textTransform:'uppercase', letterSpacing:0.5 }}>Fans</span>
+        </div>
+        {/* Superfans */}
+        <div style={{ display:'flex', alignItems:'center', gap:5,
+          background:T.hudBg, border:`1px solid ${T.hudBorder}`,
+          borderRadius:20, padding:'5px 10px',
+          backdropFilter:'blur(8px)', WebkitBackdropFilter:'blur(8px)' }}>
+          {SUPERFAN_DEFS.slice(0, 3).map(sf => {
+            const earned = superfans.includes(sf.id);
+            return <span key={sf.id} style={{ fontSize:13, filter: earned ? 'none' : 'grayscale(1) opacity(0.3)' }}>{sf.avatar}</span>;
+          })}
+          <span style={{ fontSize:12, fontWeight:900, color:T.amber, marginLeft:2 }}>{superfans.length}</span>
+          <span style={{ fontSize:8, fontWeight:700, color:T.muted, textTransform:'uppercase', letterSpacing:0.5, marginLeft:2 }}>Superfans</span>
+        </div>
       </div>
-      {/* Superfans */}
-      <div style={{ display:'flex', alignItems:'center', gap:6,
-        background:T.hudBg, border:`1px solid ${T.hudBorder}`,
-        borderRadius:20, padding:'6px 12px',
+      {/* Row 2: 60-min weekly goal */}
+      <div style={{ background:T.hudBg, border:`1px solid ${T.hudBorder}`,
+        borderRadius:10, padding:'5px 12px',
         backdropFilter:'blur(8px)', WebkitBackdropFilter:'blur(8px)' }}>
-        {SUPERFAN_DEFS.slice(0, 3).map((sf, i) => {
-          const earned = superfans.includes(sf.id);
-          return <span key={sf.id} style={{ fontSize:14, filter: earned ? 'none' : 'grayscale(1) opacity(0.3)' }}>{sf.avatar}</span>;
-        })}
-        <span style={{ fontSize:13, fontWeight:900, color:T.amber, marginLeft:2 }}>{superfans.length}</span>
+        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:3 }}>
+          <span style={{ fontSize:8, fontWeight:800, color:T.muted, textTransform:'uppercase', letterSpacing:0.5 }}>⏱ Weekly</span>
+          <span style={{ fontSize:8, fontWeight:900, color:T.gold }}>{weeklyMins} / {weeklyGoal} min</span>
+        </div>
+        <div style={{ height:4, borderRadius:2, background:'rgba(255,255,255,0.1)', overflow:'hidden' }}>
+          <div style={{ height:'100%', width:`${pct}%`, borderRadius:2,
+            background:`linear-gradient(90deg, ${T.amber}, ${T.gold})` }} />
+        </div>
       </div>
     </div>
   );
@@ -217,35 +234,63 @@ function BarHome({ fans, superfans, onGoTab }) {
 
   const dismissSpeech = () => { setSpeechChar(null); setSpeechText(''); };
 
-  // Bg ambience audio
+  // Bg ambience audio — autoplay on mount; retry on first interaction if browser blocks
   const audioRef = React.useRef(null);
-  const [audioStarted, setAudioStarted] = React.useState(false);
-  const startAudio = React.useCallback(() => {
-    if (audioStarted) return;
-    setAudioStarted(true);
-    if (!audioRef.current) {
-      audioRef.current = new Audio('dive_bar_city_ambience.wav');
-      audioRef.current.loop = true;
-      audioRef.current.volume = 0.3;
-    }
-    audioRef.current.play().catch(() => {});
-  }, [audioStarted]);
+  const [audioBlocked, setAudioBlocked] = React.useState(false);
+  React.useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    audio.volume = 0.3;
+    audio.play().then(() => {
+      setAudioBlocked(false);
+    }).catch(() => {
+      setAudioBlocked(true);
+      const unlock = () => {
+        audio.play().catch(() => {});
+        setAudioBlocked(false);
+        window.removeEventListener('pointerdown', unlock, true);
+        window.removeEventListener('keydown', unlock, true);
+      };
+      window.addEventListener('pointerdown', unlock, true);
+      window.addEventListener('keydown', unlock, true);
+    });
+  }, []);
 
   return (
-    <div style={{ width:'100%', height:'100%', position:'relative', overflow:'hidden' }}
-      onPointerDown={startAudio}>
+    <div style={{ width:'100%', height:'100%', position:'relative', overflow:'hidden' }}>
+      <audio ref={audioRef} src="smooth_jazz_bar_crowd.wav" loop preload="auto" style={{ display:'none' }} />
       {/* Bar scene background */}
       <div style={{ position:'absolute', inset:0 }}>
-        <img src="bar-scene.jpg" alt="Stu's Bar"
+        <img src="bar-scene-empty-level1.png" alt="Stu's Bar"
           style={{ width:'100%', height:'100%', objectFit:'cover', objectPosition:'center top' }} />
+        {/* Warm single overhead light — emphasises the one working lamp */}
+        <div style={{ position:'absolute', top:0, left:0, right:0, height:'60%',
+          background:'radial-gradient(ellipse 55% 45% at 42% 0%, rgba(255,155,50,0.2) 0%, transparent 70%)',
+          pointerEvents:'none' }} />
+        {/* Subtle darkness on the right — empty dim shelves */}
         <div style={{ position:'absolute', inset:0,
-          background:'linear-gradient(to bottom, transparent 0%, transparent 60%, rgba(26,16,8,0.95) 90%, #1a1008 100%)' }} />
+          background:'linear-gradient(105deg, transparent 35%, rgba(0,0,0,0.28) 100%)',
+          pointerEvents:'none' }} />
+        <div style={{ position:'absolute', inset:0,
+          background:'linear-gradient(to bottom, transparent 0%, transparent 58%, rgba(26,16,8,0.95) 90%, #1a1008 100%)' }} />
       </div>
 
       {/* Tap anywhere to dismiss speech */}
       {speechChar && (
         <div onClick={dismissSpeech}
           style={{ position:'absolute', inset:0, zIndex:4 }} />
+      )}
+
+      {/* Tap for sound chip — unobtrusive, only while autoplay is blocked */}
+      {audioBlocked && (
+        <div style={{ position:'absolute', top:'22%', left:'50%', transform:'translateX(-50%)',
+          zIndex:15, background:'rgba(15,8,2,0.65)',
+          backdropFilter:'blur(10px)', WebkitBackdropFilter:'blur(10px)',
+          border:'1px solid rgba(255,180,80,0.2)', borderRadius:20, padding:'5px 13px',
+          pointerEvents:'none', whiteSpace:'nowrap',
+          animation:'fadeUp 0.4s ease both' }}>
+          <span style={{ fontSize:10, fontWeight:700, color:'rgba(255,255,255,0.55)' }}>🔊 tap for sound</span>
+        </div>
       )}
 
       {/* HUD */}

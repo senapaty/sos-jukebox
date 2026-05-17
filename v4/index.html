@@ -4592,10 +4592,13 @@ function GymVinylLayout({ song, section, eng }) {
    SCREEN — ARCADE (Roblox-style)
 ══════════════════════════════════════════════════════════════ */
 function ArcadeScreen({ onNav, onBack }) {
-  const initialArcadeTab = (() => {
-    try { return new URLSearchParams(window.location.search).get('start') === 'drills' ? 'exercises' : 'games'; }
-    catch (e) { return 'games'; }
+  const startParam = (() => {
+    try { return new URLSearchParams(window.location.search).get('start'); }
+    catch (e) { return null; }
   })();
+  // Tab switcher only visible when opened via ?start=drills
+  const showTabSwitcher = startParam === 'drills';
+  const initialArcadeTab = startParam === 'drills' ? 'exercises' : 'games';
   const [tab, setTab] = React.useState(initialArcadeTab);
   const [pressedCard, setPressedCard] = React.useState(null);
   const featured = ARCADE_GAMES.find(g => g.featured);
@@ -4648,25 +4651,27 @@ function ArcadeScreen({ onNav, onBack }) {
           </div>
         )}
 
-        {/* Tab switcher: Games / Exercises */}
-        <div style={{ display:'flex', padding:3, borderRadius:14, background:'rgba(255,255,255,0.06)', marginBottom:4 }}>
-          {[
-            { id:'games', label:'Games', count:ARCADE_GAMES.length },
-            { id:'exercises', label:'Exercises', count:ARCADE_DRILLS.length },
-          ].map(t => (
-            <div key={t.id} onClick={() => setTab(t.id)}
-              style={{ flex:1, height:38, borderRadius:11, display:'flex', alignItems:'center', justifyContent:'center', gap:6,
-                cursor:'pointer', transition:'all 200ms ease',
-                background: tab === t.id ? 'rgba(255,255,255,0.12)' : 'transparent',
-                boxShadow: tab === t.id ? '0 2px 8px rgba(0,0,0,0.2)' : 'none' }}>
-              <span style={{ fontSize:13, fontWeight:900,
-                color: tab === t.id ? 'white' : 'rgba(255,255,255,0.4)' }}>{t.label}</span>
-              <span style={{ fontSize:10, fontWeight:800, padding:'1px 6px', borderRadius:6,
-                background: tab === t.id ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.06)',
-                color: tab === t.id ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.25)' }}>{t.count}</span>
-            </div>
-          ))}
-        </div>
+        {/* Tab switcher: Games / Exercises — only shown for ?start=drills */}
+        {showTabSwitcher && (
+          <div style={{ display:'flex', padding:3, borderRadius:14, background:'rgba(255,255,255,0.06)', marginBottom:4 }}>
+            {[
+              { id:'games', label:'Games', count:ARCADE_GAMES.length },
+              { id:'exercises', label:'Exercises', count:ARCADE_DRILLS.length },
+            ].map(t => (
+              <div key={t.id} onClick={() => setTab(t.id)}
+                style={{ flex:1, height:38, borderRadius:11, display:'flex', alignItems:'center', justifyContent:'center', gap:6,
+                  cursor:'pointer', transition:'all 200ms ease',
+                  background: tab === t.id ? 'rgba(255,255,255,0.12)' : 'transparent',
+                  boxShadow: tab === t.id ? '0 2px 8px rgba(0,0,0,0.2)' : 'none' }}>
+                <span style={{ fontSize:13, fontWeight:900,
+                  color: tab === t.id ? 'white' : 'rgba(255,255,255,0.4)' }}>{t.label}</span>
+                <span style={{ fontSize:10, fontWeight:800, padding:'1px 6px', borderRadius:6,
+                  background: tab === t.id ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.06)',
+                  color: tab === t.id ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.25)' }}>{t.count}</span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Grid content */}
