@@ -77,15 +77,11 @@ const SUPERFAN_DEFS = [
 
 // ── iOS wrapper ──
 function IOSDevice({ children }) {
-  const isStandalone = window.matchMedia('(display-mode: standalone)').matches
-    || window.navigator.standalone;
-  if (isStandalone) return <div style={{ width:'100vw', height:'100vh', overflow:'hidden', position:'relative' }}>{children}</div>;
   return (
-    <div style={{ display:'flex', justifyContent:'center', alignItems:'center',
-      height:'100vh', width:'100vw', background:'#0d0806' }}>
-      <div style={{ width:'min(393px, 100vw)', height:'min(852px, 100vh)', borderRadius:'min(44px, 5vw)', overflow:'hidden',
-        position:'relative', boxShadow:'0 20px 60px rgba(0,0,0,0.6)',
-        border:'3px solid #333', boxSizing:'border-box' }}>
+    <div style={{ display:'flex', justifyContent:'center', alignItems:'stretch',
+      height:'100dvh', width:'100vw', background:'#1a1008', overflow:'hidden' }}>
+      <div style={{ width:'min(393px, 100vw)', height:'100dvh', overflow:'hidden',
+        position:'relative', boxSizing:'border-box', background:'#1a1008' }}>
         {children}
       </div>
     </div>
@@ -433,9 +429,9 @@ const NAV_TABS = [
 function BottomNav({ active, onTap }) {
   return (
     <div style={{
-      height:82, flex:'0 0 82px', boxSizing:'border-box',
-      display:'flex', alignItems:'center', justifyContent:'space-around',
-      padding:'6px 4px 10px',
+      height:78, flex:'0 0 78px', boxSizing:'border-box',
+      display:'flex', alignItems:'stretch', justifyContent:'space-around',
+      padding:'4px 4px max(8px, env(safe-area-inset-bottom))',
       background:'rgba(20,12,4,0.98)',
       borderTop:'1px solid rgba(255,180,80,0.16)',
       boxShadow:'0 -8px 22px rgba(0,0,0,0.30)',
@@ -448,25 +444,26 @@ function BottomNav({ active, onTap }) {
           <div key={tab.id} onClick={() => onTap(tab.id)}
             style={{
               flex:1, minWidth:0,
-              display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:2,
-              cursor:'pointer', userSelect:'none', padding:'5px 2px',
+              display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'flex-start', gap:2,
+              cursor:'pointer', userSelect:'none', padding:'5px 1px 0',
               WebkitTapHighlightColor:'transparent',
             }}>
             <div style={{
               fontSize:20, lineHeight:1,
-              filter: isActive ? 'none' : 'grayscale(0.8) opacity(0.55)',
+              filter: isActive ? 'none' : 'grayscale(0.8) opacity(0.62)',
               transition:'filter 0.2s ease',
             }}>{tab.icon}</div>
             <span style={{
-              fontSize:8, fontWeight:900, letterSpacing:0.2,
-              color: isActive ? T.gold : 'rgba(255,255,255,0.50)',
+              display:'block', lineHeight:'12px', height:12,
+              fontSize:9, fontWeight:900, letterSpacing:0.12,
+              color: isActive ? T.gold : 'rgba(255,255,255,0.72)',
               textTransform:'uppercase',
               transition:'color 0.2s ease',
-              whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis', maxWidth:'100%',
+              whiteSpace:'nowrap', overflow:'visible', textOverflow:'clip', maxWidth:'100%',
             }}>{tab.label}</span>
             {isActive && (
               <div style={{ width:4, height:4, borderRadius:2, background:T.brand,
-                boxShadow:`0 0 6px ${T.brand}` }} />
+                boxShadow:`0 0 6px ${T.brand}`, marginTop:1 }} />
             )}
           </div>
         );
