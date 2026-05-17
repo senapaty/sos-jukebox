@@ -83,9 +83,9 @@ function IOSDevice({ children }) {
   return (
     <div style={{ display:'flex', justifyContent:'center', alignItems:'center',
       height:'100vh', width:'100vw', background:'#0d0806' }}>
-      <div style={{ width:393, height:852, borderRadius:44, overflow:'hidden',
+      <div style={{ width:'min(393px, 100vw)', height:'min(852px, 100vh)', borderRadius:'min(44px, 5vw)', overflow:'hidden',
         position:'relative', boxShadow:'0 20px 60px rgba(0,0,0,0.6)',
-        border:'3px solid #333' }}>
+        border:'3px solid #333', boxSizing:'border-box' }}>
         {children}
       </div>
     </div>
@@ -97,43 +97,42 @@ function HUD({ fans, superfans, weeklyMins = 18, weeklyGoal = 60 }) {
   const pct = Math.min(100, Math.round((weeklyMins / weeklyGoal) * 100));
   return (
     <div style={{ position:'absolute', top:0, left:0, right:0, zIndex:10,
-      padding:'48px 12px 8px',
-      background:'linear-gradient(to bottom, rgba(15,8,2,0.92) 0%, rgba(15,8,2,0.55) 78%, transparent 100%)' }}>
-      {/* Row 1: Fans + Superfans */}
-      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:5 }}>
-        {/* Fans */}
-        <div style={{ display:'flex', alignItems:'center', gap:6,
-          background:T.hudBg, border:`1px solid ${T.hudBorder}`,
-          borderRadius:20, padding:'5px 12px 5px 10px',
-          backdropFilter:'blur(8px)', WebkitBackdropFilter:'blur(8px)' }}>
-          <span style={{ fontSize:14 }}>👥</span>
-          <span style={{ fontSize:15, fontWeight:900, color:T.gold }}>{fans}</span>
-          <span style={{ fontSize:8, fontWeight:700, color:T.muted, textTransform:'uppercase', letterSpacing:0.5 }}>Fans</span>
+      padding:'14px 10px 6px',
+      background:'linear-gradient(to bottom, rgba(15,8,2,0.82) 0%, rgba(15,8,2,0.30) 78%, transparent 100%)' }}>
+      {/* All-in-one mobile game HUD line */}
+      <div style={{ display:'flex', alignItems:'center', gap:6,
+        background:'rgba(18,10,4,0.72)', border:`1px solid ${T.hudBorder}`,
+        borderRadius:18, padding:'5px 7px',
+        boxShadow:'0 6px 18px rgba(0,0,0,0.28)',
+        backdropFilter:'blur(10px)', WebkitBackdropFilter:'blur(10px)' }}>
+        <div style={{ display:'flex', alignItems:'center', gap:4, minWidth:56 }}>
+          <span style={{ fontSize:13 }}>👥</span>
+          <span style={{ fontSize:14, fontWeight:900, color:T.gold }}>{fans}</span>
+          <span style={{ fontSize:7, fontWeight:800, color:T.muted, textTransform:'uppercase', letterSpacing:0.35 }}>Fans</span>
         </div>
-        {/* Superfans */}
-        <div style={{ display:'flex', alignItems:'center', gap:5,
-          background:T.hudBg, border:`1px solid ${T.hudBorder}`,
-          borderRadius:20, padding:'5px 10px',
-          backdropFilter:'blur(8px)', WebkitBackdropFilter:'blur(8px)' }}>
+
+        <div style={{ width:1, alignSelf:'stretch', background:'rgba(255,255,255,0.10)' }} />
+
+        <div style={{ display:'flex', alignItems:'center', gap:3, minWidth:76 }}>
           {SUPERFAN_DEFS.slice(0, 3).map(sf => {
             const earned = superfans.includes(sf.id);
-            return <span key={sf.id} style={{ fontSize:13, filter: earned ? 'none' : 'grayscale(1) opacity(0.3)' }}>{sf.avatar}</span>;
+            return <span key={sf.id} style={{ fontSize:12, filter: earned ? 'none' : 'grayscale(1) opacity(0.3)' }}>{sf.avatar}</span>;
           })}
-          <span style={{ fontSize:12, fontWeight:900, color:T.amber, marginLeft:2 }}>{superfans.length}</span>
-          <span style={{ fontSize:8, fontWeight:700, color:T.muted, textTransform:'uppercase', letterSpacing:0.5, marginLeft:2 }}>Superfans</span>
+          <span style={{ fontSize:12, fontWeight:900, color:T.amber }}>{superfans.length}</span>
+          <span style={{ fontSize:7, fontWeight:800, color:T.muted, textTransform:'uppercase', letterSpacing:0.25 }}>Super</span>
         </div>
-      </div>
-      {/* Row 2: 60-min weekly goal */}
-      <div style={{ background:T.hudBg, border:`1px solid ${T.hudBorder}`,
-        borderRadius:10, padding:'5px 12px',
-        backdropFilter:'blur(8px)', WebkitBackdropFilter:'blur(8px)' }}>
-        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:3 }}>
-          <span style={{ fontSize:8, fontWeight:800, color:T.muted, textTransform:'uppercase', letterSpacing:0.5 }}>⏱ Weekly</span>
-          <span style={{ fontSize:8, fontWeight:900, color:T.gold }}>{weeklyMins} / {weeklyGoal} min</span>
-        </div>
-        <div style={{ height:4, borderRadius:2, background:'rgba(255,255,255,0.1)', overflow:'hidden' }}>
-          <div style={{ height:'100%', width:`${pct}%`, borderRadius:2,
-            background:`linear-gradient(90deg, ${T.amber}, ${T.gold})` }} />
+
+        <div style={{ width:1, alignSelf:'stretch', background:'rgba(255,255,255,0.10)' }} />
+
+        <div style={{ flex:1, minWidth:0 }}>
+          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', gap:6, marginBottom:2 }}>
+            <span style={{ fontSize:7, fontWeight:900, color:T.muted, textTransform:'uppercase', letterSpacing:0.35, whiteSpace:'nowrap' }}>⏱ Weekly</span>
+            <span style={{ fontSize:8, fontWeight:900, color:T.gold, whiteSpace:'nowrap' }}>{weeklyMins}/{weeklyGoal}m</span>
+          </div>
+          <div style={{ height:4, borderRadius:2, background:'rgba(255,255,255,0.12)', overflow:'hidden' }}>
+            <div style={{ height:'100%', width:`${pct}%`, borderRadius:2,
+              background:`linear-gradient(90deg, ${T.amber}, ${T.gold})` }} />
+          </div>
         </div>
       </div>
     </div>
@@ -434,35 +433,40 @@ const NAV_TABS = [
 function BottomNav({ active, onTap }) {
   return (
     <div style={{
+      height:82, flex:'0 0 82px', boxSizing:'border-box',
       display:'flex', alignItems:'center', justifyContent:'space-around',
-      padding:'8px 4px 28px',
-      background:'rgba(20,12,4,0.95)',
-      borderTop:'1px solid rgba(255,180,80,0.1)',
+      padding:'6px 4px 10px',
+      background:'rgba(20,12,4,0.98)',
+      borderTop:'1px solid rgba(255,180,80,0.16)',
+      boxShadow:'0 -8px 22px rgba(0,0,0,0.30)',
       backdropFilter:'blur(12px)', WebkitBackdropFilter:'blur(12px)',
+      position:'relative', zIndex:30,
     }}>
       {NAV_TABS.map(tab => {
         const isActive = active === tab.id;
         return (
           <div key={tab.id} onClick={() => onTap(tab.id)}
             style={{
-              display:'flex', flexDirection:'column', alignItems:'center', gap:3,
-              cursor:'pointer', userSelect:'none', padding:'6px 12px',
+              flex:1, minWidth:0,
+              display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:2,
+              cursor:'pointer', userSelect:'none', padding:'5px 2px',
               WebkitTapHighlightColor:'transparent',
             }}>
             <div style={{
-              fontSize:22,
-              filter: isActive ? 'none' : 'grayscale(0.8) opacity(0.5)',
+              fontSize:20, lineHeight:1,
+              filter: isActive ? 'none' : 'grayscale(0.8) opacity(0.55)',
               transition:'filter 0.2s ease',
             }}>{tab.icon}</div>
             <span style={{
-              fontSize:9, fontWeight:800, letterSpacing:0.3,
-              color: isActive ? T.gold : T.dim,
+              fontSize:8, fontWeight:900, letterSpacing:0.2,
+              color: isActive ? T.gold : 'rgba(255,255,255,0.50)',
               textTransform:'uppercase',
               transition:'color 0.2s ease',
+              whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis', maxWidth:'100%',
             }}>{tab.label}</span>
             {isActive && (
               <div style={{ width:4, height:4, borderRadius:2, background:T.brand,
-                boxShadow:`0 0 6px ${T.brand}`, marginTop:-1 }} />
+                boxShadow:`0 0 6px ${T.brand}` }} />
             )}
           </div>
         );
@@ -485,8 +489,8 @@ function App() {
 
   return (
     <IOSDevice>
-      <div style={{ display:'flex', flexDirection:'column', height:'100%', background:T.bg }}>
-        <div style={{ flex:1, position:'relative', overflow:'hidden' }}>
+      <div style={{ display:'flex', flexDirection:'column', height:'100%', background:T.bg, minHeight:0 }}>
+        <div style={{ flex:'1 1 auto', minHeight:0, position:'relative', overflow:'hidden' }}>
           {tab === 'home' && <BarHome fans={fans} superfans={superfans} onGoTab={goTab} />}
           {tab === 'jukebox' && <JukeboxScreen />}
           {tab === 'arcade' && <ArcadeScreen />}
