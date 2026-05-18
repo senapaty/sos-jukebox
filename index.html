@@ -68,12 +68,20 @@ const STU_QUIPS = [
 ];
 
 const SUPERFAN_DEFS = [
-  { id:'first_believer', name:'First Believer', avatar:'🧔', color:'#6BCB77' },
-  { id:'melody_mel', name:'Melody Mel', avatar:'👩‍🎤', color:'#FF9A3C' },
-  { id:'pitch_pete', name:'Pitch Pete', avatar:'🎸', color:'#4776E6' },
-  { id:'encore_enid', name:'Encore Enid', avatar:'💃', color:'#DC2626' },
-  { id:'standing_o_sam', name:'Standing O Sam', avatar:'🕺', color:'#F59E0B' },
+  { id:'first_believer', name:'First Believer', avatar:'🧔', color:'#6BCB77',
+    desc:'Your very first superfan — showed up after your debut' },
+  { id:'melody_mel', name:'Melody Mel', avatar:'👩‍🎤', color:'#FF9A3C',
+    desc:'Loves a good tune — earned by scoring 70+ on a full song' },
+  { id:'pitch_pete', name:'Pitch Pete', avatar:'🎸', color:'#4776E6',
+    desc:'Only shows up for real singers — score 80+ on a full song' },
+  { id:'encore_enid', name:'Encore Enid', avatar:'💃', color:'#DC2626',
+    desc:'She came back for more — complete 3 full songs' },
+  { id:'standing_o_sam', name:'Standing O Sam', avatar:'🕺', color:'#F59E0B',
+    desc:'Stands and applauds — score 90+ on any full song' },
 ];
+
+const FAN_REWARDS = { fullSong:25, section:10, drill:5, arcade:8 };
+const COACH_GOAL_MINUTES = 60;
 
 // ── iOS wrapper ──
 function IOSDevice({ children }) {
@@ -89,45 +97,52 @@ function IOSDevice({ children }) {
 }
 
 // ── HUD bar (top overlay on bar scene) ──
-function HUD({ fans, superfans, weeklyMins = 18, weeklyGoal = 60 }) {
+function HUD({ fans, superfans, weeklyMins = 18, weeklyGoal = 60, onTap }) {
   const pct = Math.min(100, Math.round((weeklyMins / weeklyGoal) * 100));
+  const secStyle = { cursor:'pointer', transition:'transform 120ms ease', display:'flex', alignItems:'center' };
+  const press = e => e.currentTarget.style.transform = 'scale(0.93)';
+  const release = e => e.currentTarget.style.transform = 'scale(1)';
   return (
     <div style={{ position:'absolute', top:0, left:0, right:0, zIndex:10,
-      padding:'14px 10px 6px',
-      background:'linear-gradient(to bottom, rgba(15,8,2,0.82) 0%, rgba(15,8,2,0.30) 78%, transparent 100%)' }}>
-      {/* All-in-one mobile game HUD line */}
-      <div style={{ display:'flex', alignItems:'center', gap:6,
-        background:'rgba(18,10,4,0.72)', border:`1px solid ${T.hudBorder}`,
-        borderRadius:18, padding:'5px 7px',
-        boxShadow:'0 6px 18px rgba(0,0,0,0.28)',
-        backdropFilter:'blur(10px)', WebkitBackdropFilter:'blur(10px)' }}>
-        <div style={{ display:'flex', alignItems:'center', gap:4, minWidth:56 }}>
-          <span style={{ fontSize:13 }}>👥</span>
-          <span style={{ fontSize:14, fontWeight:900, color:T.gold }}>{fans}</span>
-          <span style={{ fontSize:7, fontWeight:800, color:T.muted, textTransform:'uppercase', letterSpacing:0.35 }}>Fans</span>
+      padding:'12px 12px 10px',
+      background:'linear-gradient(to bottom, rgba(15,8,2,0.96) 0%, rgba(15,8,2,0.75) 70%, transparent 100%)' }}>
+      <div style={{ display:'flex', alignItems:'center', gap:10,
+        background:'rgba(18,10,4,0.9)', border:`1px solid ${T.hudBorder}`,
+        borderRadius:22, padding:'10px 14px',
+        boxShadow:'0 6px 18px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,180,80,0.08)',
+        backdropFilter:'blur(12px)', WebkitBackdropFilter:'blur(12px)' }}>
+        <div onClick={() => onTap?.('fans')} onPointerDown={press} onPointerUp={release} onPointerLeave={release}
+          style={{ ...secStyle, gap:5 }}>
+          <span style={{ fontSize:16 }}>👥</span>
+          <span style={{ fontSize:18, fontWeight:900, color:T.gold }}>{fans}</span>
+          <span style={{ fontSize:9, fontWeight:800, color:T.muted, textTransform:'uppercase', letterSpacing:0.4 }}>Fans</span>
         </div>
 
         <div style={{ width:1, alignSelf:'stretch', background:'rgba(255,255,255,0.10)' }} />
 
-        <div style={{ display:'flex', alignItems:'center', gap:3, minWidth:76 }}>
+        <div onClick={() => onTap?.('superfans')} onPointerDown={press} onPointerUp={release} onPointerLeave={release}
+          style={{ ...secStyle, gap:4 }}>
           {SUPERFAN_DEFS.slice(0, 3).map(sf => {
             const earned = superfans.includes(sf.id);
-            return <span key={sf.id} style={{ fontSize:12, filter: earned ? 'none' : 'grayscale(1) opacity(0.3)' }}>{sf.avatar}</span>;
+            return <span key={sf.id} style={{ fontSize:15, filter: earned ? 'none' : 'grayscale(1) opacity(0.3)' }}>{sf.avatar}</span>;
           })}
-          <span style={{ fontSize:12, fontWeight:900, color:T.amber }}>{superfans.length}</span>
-          <span style={{ fontSize:7, fontWeight:800, color:T.muted, textTransform:'uppercase', letterSpacing:0.25 }}>Super</span>
+          <span style={{ fontSize:15, fontWeight:900, color:T.amber }}>{superfans.length}</span>
+          <span style={{ fontSize:9, fontWeight:800, color:T.muted, textTransform:'uppercase', letterSpacing:0.3 }}>Super</span>
         </div>
 
         <div style={{ width:1, alignSelf:'stretch', background:'rgba(255,255,255,0.10)' }} />
 
-        <div style={{ flex:1, minWidth:0 }}>
-          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', gap:6, marginBottom:2 }}>
-            <span style={{ fontSize:7, fontWeight:900, color:T.muted, textTransform:'uppercase', letterSpacing:0.35, whiteSpace:'nowrap' }}>⏱ Weekly</span>
-            <span style={{ fontSize:8, fontWeight:900, color:T.gold, whiteSpace:'nowrap' }}>{weeklyMins}/{weeklyGoal}m</span>
-          </div>
-          <div style={{ height:4, borderRadius:2, background:'rgba(255,255,255,0.12)', overflow:'hidden' }}>
-            <div style={{ height:'100%', width:`${pct}%`, borderRadius:2,
-              background:`linear-gradient(90deg, ${T.amber}, ${T.gold})` }} />
+        <div onClick={() => onTap?.('minutes')} onPointerDown={press} onPointerUp={release} onPointerLeave={release}
+          style={{ ...secStyle, flex:1, minWidth:0 }}>
+          <div style={{ flex:1, minWidth:0 }}>
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', gap:6, marginBottom:3 }}>
+              <span style={{ fontSize:9, fontWeight:900, color:T.muted, textTransform:'uppercase', letterSpacing:0.4, whiteSpace:'nowrap' }}>⏱ Weekly</span>
+              <span style={{ fontSize:11, fontWeight:900, color:T.gold, whiteSpace:'nowrap' }}>{weeklyMins}/{weeklyGoal}m</span>
+            </div>
+            <div style={{ height:6, borderRadius:3, background:'rgba(255,255,255,0.12)', overflow:'hidden' }}>
+              <div style={{ height:'100%', width:`${pct}%`, borderRadius:3,
+                background:`linear-gradient(90deg, ${T.amber}, ${T.gold})` }} />
+            </div>
           </div>
         </div>
       </div>
@@ -156,6 +171,128 @@ function SpeechBubble({ text, side, color, onDismiss }) {
         width:12, height:12, background:'rgba(255,255,245,0.95)',
         transform:'rotate(45deg)', borderRadius:2,
       }} />
+    </div>
+  );
+}
+
+// ── HUD Detail Sheet (tapping fans / superfans / weekly) ──
+function HudDetailSheet({ type, fans, superfans, weeklyMins, onClose }) {
+  return (
+    <div style={{ position:'absolute', inset:0, zIndex:100 }}>
+      <div style={{ position:'absolute', inset:0, background:'rgba(0,0,0,0.55)',
+        backdropFilter:'blur(4px)', WebkitBackdropFilter:'blur(4px)' }} onClick={onClose} />
+      <div style={{ position:'absolute', bottom:0, left:0, right:0, background:'#1a1008',
+        borderRadius:'24px 24px 0 0', padding:'20px 20px 40px', maxHeight:'70%', overflowY:'auto',
+        border:'1px solid rgba(255,180,80,0.15)', borderBottom:'none',
+        animation:'sheetUp 0.32s cubic-bezier(0.34,1.56,0.64,1)' }}>
+        <div style={{ width:36, height:4, borderRadius:2, background:'rgba(255,255,255,0.15)',
+          margin:'0 auto 20px' }} />
+
+        {type === 'fans' && (
+          <>
+            <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:20 }}>
+              <div style={{ width:48, height:48, borderRadius:14,
+                background:'linear-gradient(135deg,#FF6900,#FFD93D)',
+                display:'flex', alignItems:'center', justifyContent:'center', fontSize:24,
+                boxShadow:'0 4px 16px rgba(255,105,0,0.3)' }}>👥</div>
+              <div>
+                <div style={{ fontSize:28, fontWeight:900, color:T.white }}>{fans.toLocaleString()}</div>
+                <div style={{ fontSize:12, fontWeight:700, color:T.muted }}>Total Fans</div>
+              </div>
+            </div>
+            <div style={{ fontSize:13, fontWeight:600, color:'rgba(255,255,255,0.6)', lineHeight:1.7, marginBottom:16 }}>
+              Use your voice, get fans. Every singing action earns fans — full songs, sections, drills, and arcade games.
+            </div>
+            <div style={{ fontSize:11, fontWeight:800, color:T.muted, letterSpacing:0.8, textTransform:'uppercase', marginBottom:10 }}>How to earn</div>
+            {[
+              { label:'Full song', fans:FAN_REWARDS.fullSong, icon:'🎤' },
+              { label:'Section practice', fans:FAN_REWARDS.section, icon:'🎵' },
+              { label:'Arcade game', fans:FAN_REWARDS.arcade, icon:'🕹️' },
+              { label:'Drill / exercise', fans:FAN_REWARDS.drill, icon:'💨' },
+            ].map(r => (
+              <div key={r.label} style={{ display:'flex', alignItems:'center', gap:10, padding:'10px 0',
+                borderBottom:'1px solid rgba(255,255,255,0.06)' }}>
+                <span style={{ fontSize:18 }}>{r.icon}</span>
+                <span style={{ flex:1, fontSize:14, fontWeight:700, color:T.white }}>{r.label}</span>
+                <span style={{ fontSize:13, fontWeight:900, color:T.brand }}>+{r.fans} fans</span>
+              </div>
+            ))}
+          </>
+        )}
+
+        {type === 'superfans' && (
+          <>
+            <div style={{ fontSize:20, fontWeight:900, color:T.white, marginBottom:4 }}>Superfans</div>
+            <div style={{ fontSize:12, fontWeight:600, color:'rgba(255,255,255,0.5)', marginBottom:16, lineHeight:1.5 }}>
+              Perform full songs to win superfans. Bring back the regulars of Stu's bar.
+            </div>
+            {SUPERFAN_DEFS.map(sf => {
+              const earned = superfans.includes(sf.id);
+              return (
+                <div key={sf.id} style={{ display:'flex', alignItems:'center', gap:14, padding:'12px 0',
+                  borderBottom:'1px solid rgba(255,255,255,0.06)', opacity: earned ? 1 : 0.45 }}>
+                  <div style={{ width:48, height:48, borderRadius:14, flexShrink:0,
+                    background: earned ? `linear-gradient(135deg,${sf.color}22,${sf.color}44)` : 'rgba(255,255,255,0.06)',
+                    display:'flex', alignItems:'center', justifyContent:'center', fontSize:26,
+                    border: earned ? `2px solid ${sf.color}40` : '2px solid rgba(255,255,255,0.06)',
+                    filter: earned ? 'none' : 'grayscale(1)' }}>
+                    {sf.avatar}
+                  </div>
+                  <div style={{ flex:1 }}>
+                    <div style={{ fontSize:15, fontWeight:900, color: earned ? T.white : T.muted }}>
+                      {earned ? sf.name : '???'}
+                    </div>
+                    <div style={{ fontSize:11, fontWeight:600, color:'rgba(255,255,255,0.4)', marginTop:2 }}>{sf.desc}</div>
+                  </div>
+                  {earned && <span style={{ fontSize:11, fontWeight:900, color:sf.color }}>Earned</span>}
+                </div>
+              );
+            })}
+          </>
+        )}
+
+        {type === 'minutes' && (
+          <>
+            <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:16 }}>
+              <div style={{ width:48, height:48, borderRadius:14,
+                background:'linear-gradient(135deg,#047857,#10B981)',
+                display:'flex', alignItems:'center', justifyContent:'center', fontSize:24,
+                boxShadow:'0 4px 16px rgba(4,120,87,0.3)' }}>🎙️</div>
+              <div>
+                <div style={{ fontSize:28, fontWeight:900, color:T.white }}>{Math.round(weeklyMins)} min</div>
+                <div style={{ fontSize:12, fontWeight:700, color:T.muted }}>Sung this week</div>
+              </div>
+            </div>
+            <div style={{ height:10, borderRadius:5, background:'rgba(255,255,255,0.08)', overflow:'hidden', marginBottom:8 }}>
+              <div style={{ height:'100%', borderRadius:5,
+                width:`${Math.min(100,(weeklyMins/COACH_GOAL_MINUTES)*100)}%`,
+                background:'linear-gradient(90deg,#047857,#10B981)',
+                transition:'width 600ms ease' }} />
+            </div>
+            <div style={{ fontSize:12, fontWeight:700, color:'rgba(255,255,255,0.5)', marginBottom:20 }}>
+              {weeklyMins >= COACH_GOAL_MINUTES
+                ? 'Coach review unlocked! Tap to claim your 60-sec review.'
+                : `${COACH_GOAL_MINUTES - Math.round(weeklyMins)} more minutes to unlock a 60-sec coach review.`}
+            </div>
+            <div style={{ fontSize:11, fontWeight:800, color:T.muted, letterSpacing:0.8, textTransform:'uppercase', marginBottom:10 }}>What counts</div>
+            {[
+              { label:'Singing a song', icon:'🎤', counts:true },
+              { label:'Singing a section', icon:'🎵', counts:true },
+              { label:'Singing a drill', icon:'💨', counts:true },
+              { label:'Voice arcade (active)', icon:'🕹️', counts:true },
+              { label:'Listening', icon:'🎧', counts:false },
+              { label:'Browsing songs', icon:'📱', counts:false },
+            ].map(r => (
+              <div key={r.label} style={{ display:'flex', alignItems:'center', gap:10, padding:'8px 0',
+                borderBottom:'1px solid rgba(255,255,255,0.06)' }}>
+                <span style={{ fontSize:16 }}>{r.icon}</span>
+                <span style={{ flex:1, fontSize:13, fontWeight:700, color: r.counts ? T.white : T.muted }}>{r.label}</span>
+                <span style={{ fontSize:12, fontWeight:900, color: r.counts ? '#10B981' : 'rgba(255,255,255,0.2)' }}>{r.counts ? 'Yes' : 'No'}</span>
+              </div>
+            ))}
+          </>
+        )}
+      </div>
     </div>
   );
 }
@@ -215,10 +352,11 @@ function TodaySheet({ tasks, onClose, onGoTab }) {
 }
 
 // ── Bar Home Screen ──
-function BarHome({ fans, superfans, onGoTab }) {
+function BarHome({ fans, superfans, weeklyMins, onGoTab }) {
   const [speechChar, setSpeechChar] = React.useState(null);
   const [speechText, setSpeechText] = React.useState('');
   const [showToday, setShowToday] = React.useState(false);
+  const [hudSheet, setHudSheet] = React.useState(null);
 
   const quip = (who) => {
     const quips = who === 'zeke' ? ZEKE_QUIPS : STU_QUIPS;
@@ -289,7 +427,8 @@ function BarHome({ fans, superfans, onGoTab }) {
       )}
 
       {/* HUD */}
-      <HUD fans={fans} superfans={superfans} />
+      <HUD fans={fans} superfans={superfans} weeklyMins={weeklyMins}
+        weeklyGoal={COACH_GOAL_MINUTES} onTap={setHudSheet} />
 
       {/* Stu behind bar — positioned upper-left area */}
       <div style={{ position:'absolute', left:16, bottom:'28%', zIndex:5 }}>
@@ -329,49 +468,41 @@ function BarHome({ fans, superfans, onGoTab }) {
         </div>
       </div>
 
-      {/* Clipboard — floating overlay center */}
-      <div style={{ position:'absolute', left:'50%', bottom:'22%', transform:'translateX(-50%)', zIndex:8 }}>
-        <div onPointerUp={() => setShowToday(true)}
+      {/* Clipboard — pinned top-right below HUD, Supercell quest-board style */}
+      <div style={{ position:'absolute', top:62, right:12, zIndex:11 }}>
+        <div
           style={{
             cursor:'pointer', userSelect:'none',
-            animation:'floatY 3s ease-in-out infinite, clipGlow 2s ease-in-out infinite',
+            animation:'floatY 3s ease-in-out infinite',
             transition:'transform 0.15s ease',
           }}
-          onPointerDown={e => e.currentTarget.style.transform='translateX(-50%) scale(0.92)'}
-          onPointerLeave={e => e.currentTarget.style.transform='translateX(-50%) scale(1)'}>
+          onPointerDown={e => e.currentTarget.style.transform='scale(0.88)'}
+          onPointerUp={e => { e.currentTarget.style.transform='scale(1)'; setShowToday(true); }}
+          onPointerLeave={e => e.currentTarget.style.transform='scale(1)'}>
           <div style={{ position:'relative' }}>
-            <img src="clipboard.webp" alt="Today's Tasks"
-              style={{ height:80, objectFit:'contain',
-                filter:'drop-shadow(0 4px 20px rgba(255,180,50,0.4))' }} />
-            {/* Badge */}
-            <div style={{ position:'absolute', top:-6, right:-8,
+            <img src="nav-clipboard.png" alt="Today's Goals"
+              style={{ width:52, height:52, objectFit:'contain',
+                filter:'drop-shadow(0 3px 10px rgba(255,180,50,0.5))' }} />
+            <div style={{ position:'absolute', top:-6, right:-6,
               width:22, height:22, borderRadius:11, background:T.brand,
               display:'flex', alignItems:'center', justifyContent:'center',
-              boxShadow:'0 2px 8px rgba(255,105,0,0.5)',
+              boxShadow:'0 2px 8px rgba(255,105,0,0.6)',
               border:'2px solid #1a1008' }}>
               <span style={{ fontSize:10, fontWeight:900, color:'white' }}>{TODAY_TASKS.length}</span>
             </div>
           </div>
-          <div style={{ textAlign:'center', marginTop:4 }}>
-            <span style={{ fontSize:10, fontWeight:800, color:T.gold,
-              textShadow:'0 1px 6px rgba(0,0,0,0.8)' }}>Today</span>
-          </div>
         </div>
-      </div>
-
-      {/* Bar name watermark */}
-      <div style={{ position:'absolute', bottom:'16%', left:0, right:0, textAlign:'center', zIndex:2 }}>
-        <span style={{ fontSize:24, fontWeight:900, letterSpacing:1,
-          background:'linear-gradient(135deg,#FF6900,#FFD93D)',
-          WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent',
-          textShadow:'none', opacity:0.7 }}>
-          Stu's Bar
-        </span>
       </div>
 
       {/* Today tasks sheet */}
       {showToday && (
         <TodaySheet tasks={TODAY_TASKS} onClose={() => setShowToday(false)} onGoTab={onGoTab} />
+      )}
+
+      {/* HUD detail sheets */}
+      {hudSheet && (
+        <HudDetailSheet type={hudSheet} fans={fans} superfans={superfans}
+          weeklyMins={weeklyMins} onClose={() => setHudSheet(null)} />
       )}
     </div>
   );
@@ -419,23 +550,22 @@ function ProfileScreen() {
 
 // ── Bottom Nav ──
 const NAV_TABS = [
-  { id:'home', label:'Home', icon:'🏠' },
-  { id:'jukebox', label:'Jukebox', icon:'🎤' },
-  { id:'arcade', label:'Arcade', icon:'🕹️' },
-  { id:'drills', label:'Drills', icon:'💪' },
-  { id:'profile', label:'Profile', icon:'👤' },
+  { id:'home', label:'Home', img:'nav-home.png' },
+  { id:'jukebox', label:'Jukebox', img:'nav-jukebox.png' },
+  { id:'arcade', label:'Arcade', img:'nav-arcade.png' },
+  { id:'drills', label:'Drills', img:'nav-drills.png' },
+  { id:'profile', label:'Profile', img:'nav-profile.png' },
 ];
 
 function BottomNav({ active, onTap }) {
   return (
     <div style={{
-      height:78, flex:'0 0 78px', boxSizing:'border-box',
+      height:84, flex:'0 0 84px', boxSizing:'border-box',
       display:'flex', alignItems:'stretch', justifyContent:'space-around',
       padding:'4px 4px max(8px, env(safe-area-inset-bottom))',
-      background:'rgba(20,12,4,0.98)',
-      borderTop:'1px solid rgba(255,180,80,0.16)',
-      boxShadow:'0 -8px 22px rgba(0,0,0,0.30)',
-      backdropFilter:'blur(12px)', WebkitBackdropFilter:'blur(12px)',
+      background:'linear-gradient(to top, rgba(12,7,2,0.99), rgba(20,12,4,0.97))',
+      borderTop:'1.5px solid rgba(255,180,80,0.18)',
+      boxShadow:'0 -6px 24px rgba(0,0,0,0.40)',
       position:'relative', zIndex:30,
     }}>
       {NAV_TABS.map(tab => {
@@ -445,26 +575,45 @@ function BottomNav({ active, onTap }) {
             style={{
               flex:1, minWidth:0,
               display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'flex-start', gap:2,
-              cursor:'pointer', userSelect:'none', padding:'5px 1px 0',
+              cursor:'pointer', userSelect:'none', padding:'3px 2px 0',
               WebkitTapHighlightColor:'transparent',
-            }}>
+              transition:'transform 120ms ease',
+            }}
+            onPointerDown={e => e.currentTarget.style.transform='scale(0.88)'}
+            onPointerUp={e => e.currentTarget.style.transform='scale(1)'}
+            onPointerLeave={e => e.currentTarget.style.transform='scale(1)'}>
             <div style={{
-              fontSize:20, lineHeight:1,
-              filter: isActive ? 'none' : 'grayscale(0.8) opacity(0.62)',
-              transition:'filter 0.2s ease',
-            }}>{tab.icon}</div>
+              width:44, height:44, borderRadius:14, overflow:'hidden',
+              display:'flex', alignItems:'center', justifyContent:'center',
+              background: isActive
+                ? 'radial-gradient(circle at 50% 40%, rgba(255,200,80,0.28), rgba(255,105,0,0.15) 70%, rgba(255,80,0,0.06))'
+                : 'rgba(255,255,255,0.03)',
+              border: isActive
+                ? '2px solid rgba(255,180,80,0.5)'
+                : '2px solid rgba(255,255,255,0.05)',
+              boxShadow: isActive
+                ? '0 0 16px rgba(255,150,50,0.35), 0 2px 8px rgba(255,105,0,0.25), inset 0 1px 0 rgba(255,220,120,0.2)'
+                : 'none',
+              transition:'all 0.2s ease',
+            }}>
+              <img src={tab.img} alt={tab.label}
+                style={{
+                  width:34, height:34, objectFit:'contain',
+                  filter: isActive
+                    ? 'brightness(1.3) saturate(1.4) drop-shadow(0 0 4px rgba(255,180,50,0.5))'
+                    : 'brightness(0.5) saturate(0.3)',
+                  transition:'filter 0.2s ease',
+                }} />
+            </div>
             <span style={{
-              display:'block', lineHeight:'12px', height:12,
-              fontSize:9, fontWeight:900, letterSpacing:0.12,
-              color: isActive ? T.gold : 'rgba(255,255,255,0.72)',
+              display:'block', lineHeight:'11px', height:11,
+              fontSize:8, fontWeight:900, letterSpacing:0.3,
+              color: isActive ? T.gold : 'rgba(255,255,255,0.4)',
               textTransform:'uppercase',
               transition:'color 0.2s ease',
-              whiteSpace:'nowrap', overflow:'visible', textOverflow:'clip', maxWidth:'100%',
+              textShadow: isActive ? '0 0 8px rgba(255,200,50,0.4)' : 'none',
+              whiteSpace:'nowrap',
             }}>{tab.label}</span>
-            {isActive && (
-              <div style={{ width:4, height:4, borderRadius:2, background:T.brand,
-                boxShadow:`0 0 6px ${T.brand}`, marginTop:1 }} />
-            )}
           </div>
         );
       })}
@@ -477,6 +626,7 @@ function App() {
   const [tab, setTab] = React.useState('home');
   const [fans] = React.useState(32);
   const [superfans] = React.useState(['first_believer']);
+  const [weeklyMins] = React.useState(18);
 
   const goTab = (t) => setTab(t);
 
@@ -488,7 +638,7 @@ function App() {
     <IOSDevice>
       <div style={{ display:'flex', flexDirection:'column', height:'100%', background:T.bg, minHeight:0 }}>
         <div style={{ flex:'1 1 auto', minHeight:0, position:'relative', overflow:'hidden' }}>
-          {tab === 'home' && <BarHome fans={fans} superfans={superfans} onGoTab={goTab} />}
+          {tab === 'home' && <BarHome fans={fans} superfans={superfans} weeklyMins={weeklyMins} onGoTab={goTab} />}
           {tab === 'jukebox' && <JukeboxScreen />}
           {tab === 'arcade' && <ArcadeScreen />}
           {tab === 'drills' && <DrillsScreen />}
