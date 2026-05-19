@@ -68,17 +68,61 @@ const STU_QUIPS = [
 ];
 
 const SUPERFAN_DEFS = [
-  { id:'first_believer', name:'First Believer', avatar:'🧔', color:'#6BCB77',
+  { id:'first_believer', name:'First Believer', img:'assets/superfans/first_believer.jpg', color:'#6BCB77',
     desc:'Your very first superfan — showed up after your debut' },
-  { id:'melody_mel', name:'Melody Mel', avatar:'👩‍🎤', color:'#FF9A3C',
-    desc:'Loves a good tune — earned by scoring 70+ on a full song' },
-  { id:'pitch_pete', name:'Pitch Pete', avatar:'🎸', color:'#4776E6',
+  { id:'melody_mel', name:'Melody Mel', img:'assets/superfans/melody_mel.jpg', color:'#FF9A3C',
+    desc:'Loves a good tune — score 70+ on a full song' },
+  { id:'pitch_pete', name:'Pitch Pete', img:'assets/superfans/pitch_pete.jpg', color:'#4776E6',
     desc:'Only shows up for real singers — score 80+ on a full song' },
-  { id:'encore_enid', name:'Encore Enid', avatar:'💃', color:'#DC2626',
+  { id:'encore_enid', name:'Encore Enid', img:'assets/superfans/encore_enid.jpg', color:'#DC2626',
     desc:'She came back for more — complete 3 full songs' },
-  { id:'standing_o_sam', name:'Standing O Sam', avatar:'🕺', color:'#F59E0B',
+  { id:'standing_o_sam', name:'Standing O Sam', img:'assets/superfans/standing_o_sam.jpg', color:'#F59E0B',
     desc:'Stands and applauds — score 90+ on any full song' },
+  { id:'vinyl_vicky', name:'Vinyl Vicky', img:'assets/superfans/vinyl_vicky.jpg', color:'#9333EA',
+    desc:'Retro soul — practice 5 different songs' },
+  { id:'bass_drop_boris', name:'Bass Drop Boris', img:'assets/superfans/bass_drop_boris.jpg', color:'#1E40AF',
+    desc:'Feels the bass — complete 3 arcade games' },
+  { id:'harmony_hank', name:'Harmony Hank', img:'assets/superfans/harmony_hank.jpg', color:'#0D9488',
+    desc:'Wise ears — finish 5 drill exercises' },
+  { id:'treble_tina', name:'Treble Tina', img:'assets/superfans/treble_tina.jpg', color:'#EC4899',
+    desc:'High notes only — hit 10 high notes in a song' },
+  { id:'mic_check_mike', name:'Mic Check Mike', img:'assets/superfans/mic_check_mike.jpg', color:'#EA580C',
+    desc:'Always first to arrive — log in 7 days in a row' },
+  { id:'crescendo_carl', name:'Crescendo Carl', img:'assets/superfans/crescendo_carl.jpg', color:'#6B7280',
+    desc:'Builds to the peak — improve your score 3 songs in a row' },
+  { id:'rhythm_ruby', name:'Rhythm Ruby', img:'assets/superfans/rhythm_ruby.jpg', color:'#DB2777',
+    desc:'Moves to the beat — score 85+ on any full song' },
+  { id:'falsetto_fred', name:'Falsetto Fred', img:'assets/superfans/falsetto_fred.jpg', color:'#84CC16',
+    desc:'Reaches the top — nail the high section of a hard song' },
+  { id:'alto_alice', name:'Alto Alice', img:'assets/superfans/alto_alice.jpg', color:'#16A34A',
+    desc:'Smooth and steady — complete 10 full songs' },
+  { id:'beatbox_benny', name:'Beatbox Benny', img:'assets/superfans/beatbox_benny.jpg', color:'#65A30D',
+    desc:'Rhythm master — win 5 arcade games' },
+  { id:'serenade_sally', name:'Serenade Sally', img:'assets/superfans/serenade_sally.jpg', color:'#A78BFA',
+    desc:'Loves a love song — sing 3 ballads' },
+  { id:'karaoke_king', name:'Karaoke King', img:'assets/superfans/karaoke_king.jpg', color:'#7C3AED',
+    desc:'The crown awaits — score 95+ on any full song' },
+  { id:'diva_diana', name:'Diva Diana', img:'assets/superfans/diva_diana.jpg', color:'#0891B2',
+    desc:'Fabulous entrance — complete 15 full songs' },
+  { id:'showstopper_steve', name:'Showstopper Steve', img:'assets/superfans/showstopper_steve.jpg', color:'#B91C1C',
+    desc:'Brings the house down — score 90+ three times' },
+  { id:'legendary_luna', name:'Legendary Luna', img:'assets/superfans/legendary_luna.jpg', color:'#1E3A5F',
+    desc:'The final superfan — only legends attract her' },
 ];
+
+// Level thresholds: superfans needed to reach each bar level
+const LEVEL_THRESHOLDS = [0, 1, 2, 4, 6, 8, 10, 13, 16, 20];
+function getBarLevel(superfanCount) {
+  for (let i = LEVEL_THRESHOLDS.length - 1; i >= 0; i--) {
+    if (superfanCount >= LEVEL_THRESHOLDS[i]) return i + 1;
+  }
+  return 1;
+}
+
+// Character sprites — using originals for now (milestone art TBD)
+function getCharSprite(who) {
+  return who === 'zeke' ? 'zeke-standing.webp' : 'stu-arms-crossed.webp';
+}
 
 const FAN_REWARDS = { fullSong:25, section:10, drill:5, arcade:8 };
 const COACH_GOAL_MINUTES = 60;
@@ -96,54 +140,36 @@ function IOSDevice({ children }) {
   );
 }
 
-// ── HUD bar (top overlay on bar scene) ──
-function HUD({ fans, superfans, weeklyMins = 18, weeklyGoal = 60, onTap }) {
-  const pct = Math.min(100, Math.round((weeklyMins / weeklyGoal) * 100));
-  const secStyle = { cursor:'pointer', transition:'transform 120ms ease', display:'flex', alignItems:'center' };
+// ── HUD capsule (fans + tier) ──
+function HUD({ fans, superfans, onTap }) {
+  const lvl = getBarLevel(superfans.length);
   const press = e => e.currentTarget.style.transform = 'scale(0.93)';
   const release = e => e.currentTarget.style.transform = 'scale(1)';
   return (
     <div style={{ position:'absolute', top:0, left:0, right:0, zIndex:10,
       padding:'12px 12px 10px',
       background:'linear-gradient(to bottom, rgba(15,8,2,0.96) 0%, rgba(15,8,2,0.75) 70%, transparent 100%)' }}>
-      <div style={{ display:'flex', alignItems:'center', gap:10,
-        background:'rgba(18,10,4,0.9)', border:`1px solid ${T.hudBorder}`,
-        borderRadius:22, padding:'10px 14px',
-        boxShadow:'0 6px 18px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,180,80,0.08)',
-        backdropFilter:'blur(12px)', WebkitBackdropFilter:'blur(12px)' }}>
-        <div onClick={() => onTap?.('fans')} onPointerDown={press} onPointerUp={release} onPointerLeave={release}
-          style={{ ...secStyle, gap:5 }}>
-          <span style={{ fontSize:16 }}>👥</span>
-          <span style={{ fontSize:18, fontWeight:900, color:T.gold }}>{fans}</span>
-          <span style={{ fontSize:9, fontWeight:800, color:T.muted, textTransform:'uppercase', letterSpacing:0.4 }}>Fans</span>
-        </div>
+      <div onClick={() => onTap?.('barlevel')}
+        onPointerDown={press} onPointerUp={release} onPointerLeave={release}
+        style={{
+          display:'inline-flex', alignItems:'center', gap:10,
+          background:'rgba(18,10,4,0.9)', border:`1px solid ${T.hudBorder}`,
+          borderRadius:22, padding:'8px 16px',
+          boxShadow:'0 6px 18px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,180,80,0.08)',
+          backdropFilter:'blur(12px)', WebkitBackdropFilter:'blur(12px)',
+          cursor:'pointer', transition:'transform 120ms ease',
+        }}>
+        <span style={{ fontSize:14 }}>👥</span>
+        <span style={{ fontSize:17, fontWeight:900, color:T.gold }}>{fans}</span>
 
-        <div style={{ width:1, alignSelf:'stretch', background:'rgba(255,255,255,0.10)' }} />
+        <div style={{ width:1, height:20, background:'rgba(255,255,255,0.10)' }} />
 
-        <div onClick={() => onTap?.('superfans')} onPointerDown={press} onPointerUp={release} onPointerLeave={release}
-          style={{ ...secStyle, gap:4 }}>
-          {SUPERFAN_DEFS.slice(0, 3).map(sf => {
-            const earned = superfans.includes(sf.id);
-            return <span key={sf.id} style={{ fontSize:15, filter: earned ? 'none' : 'grayscale(1) opacity(0.3)' }}>{sf.avatar}</span>;
-          })}
-          <span style={{ fontSize:15, fontWeight:900, color:T.amber }}>{superfans.length}</span>
-          <span style={{ fontSize:9, fontWeight:800, color:T.muted, textTransform:'uppercase', letterSpacing:0.3 }}>Super</span>
-        </div>
-
-        <div style={{ width:1, alignSelf:'stretch', background:'rgba(255,255,255,0.10)' }} />
-
-        <div onClick={() => onTap?.('minutes')} onPointerDown={press} onPointerUp={release} onPointerLeave={release}
-          style={{ ...secStyle, flex:1, minWidth:0 }}>
-          <div style={{ flex:1, minWidth:0 }}>
-            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', gap:6, marginBottom:3 }}>
-              <span style={{ fontSize:9, fontWeight:900, color:T.muted, textTransform:'uppercase', letterSpacing:0.4, whiteSpace:'nowrap' }}>⏱ Weekly</span>
-              <span style={{ fontSize:11, fontWeight:900, color:T.gold, whiteSpace:'nowrap' }}>{weeklyMins}/{weeklyGoal}m</span>
-            </div>
-            <div style={{ height:6, borderRadius:3, background:'rgba(255,255,255,0.12)', overflow:'hidden' }}>
-              <div style={{ height:'100%', width:`${pct}%`, borderRadius:3,
-                background:`linear-gradient(90deg, ${T.amber}, ${T.gold})` }} />
-            </div>
-          </div>
+        <div style={{
+          padding:'3px 9px', borderRadius:10,
+          background:'linear-gradient(135deg, rgba(255,105,0,0.25), rgba(255,200,50,0.15))',
+          border:'1px solid rgba(255,180,80,0.3)',
+        }}>
+          <span style={{ fontSize:11, fontWeight:900, color:T.gold, letterSpacing:0.3 }}>Tier {lvl}</span>
         </div>
       </div>
     </div>
@@ -175,35 +201,140 @@ function SpeechBubble({ text, side, color, onDismiss }) {
   );
 }
 
-// ── HUD Detail Sheet (tapping fans / superfans / weekly) ──
-function HudDetailSheet({ type, fans, superfans, weeklyMins, onClose }) {
+// ── Cut-scene stories for each superfan ──
+const CUTSCENES = {
+  first_believer: "The door creaks open. A stocky bear in a faded band tee shuffles in, glances at the empty stools, and sits down. He heard someone was brave enough to sing in this dump. \"I believe in ya,\" he says, ordering a drink. He's not going anywhere.",
+  melody_mel: "A flash of pink feathers at the doorway. Melody Mel struts in wearing headphones like a crown. She heard a tune worth hearing — yours. \"Not bad,\" she says with a cool nod. \"Play it again.\"",
+  pitch_pete: "A burst of color lands on a bar stool. Pitch Pete, the parrot in a denim jacket covered in pins, cocks his head. \"You actually hit that note,\" he squawks, impressed. \"Most singers here can't do that.\"",
+  encore_enid: "Encore Enid, the fox in the sparkly top, slides through the door mid-song. \"I came back,\" she grins. \"Nobody makes me come back. You must be doing something right.\"",
+  standing_o_sam: "The floor shakes. Standing O Sam, all 400 pounds of gorilla in a varsity jacket, rises from his seat. He's clapping. Actually clapping. The whole bar turns to look. That's the highest honor.",
+  vinyl_vicky: "Vinyl Vicky was browsing the record bins when she heard your voice. The raccoon adjusts her scarf and smiles knowingly. \"You've got range, kid. I can tell.\"",
+  bass_drop_boris: "Boris the bulldog kicks the door open. Chain swinging, hoodie up. He drops into a seat and the bass in your voice makes him nod. \"Respect,\" he growls.",
+  harmony_hank: "An old owl in a bow tie settles onto the end stool. Hank has heard every singer in this town for fifty years. He adjusts his glasses, listens, and simply nods. That's all you need.",
+  treble_tina: "A calico cat in a beret hops onto the bar. Tina winks. \"Those high notes? Delicious. I had to come see for myself.\" She orders a saucer of milk and stays.",
+  mic_check_mike: "A rooster in a leather vest struts in at dawn. \"You're here every day,\" Mike crows. \"I respect the grind. Count me in.\"",
+  crescendo_carl: "The elephant squeezes through the door carefully. Carl closes his eyes and sways. \"Each time you sing, it's better than the last. That's rare.\"",
+  rhythm_ruby: "A blur of magenta leg warmers and long ears. Ruby the rabbit bounces through the door, already moving to the beat. \"I couldn't sit still!\" she laughs.",
+  falsetto_fred: "A giraffe in a turtleneck ducks under the door frame. Fred's eyes go wide when you hit the high note. \"How did you — I can barely reach that!\"",
+  alto_alice: "A deer in a folk cardigan steps in quietly. Alice doesn't need flashy entrances. \"I've heard you ten times now,\" she says softly. \"You're the real thing.\"",
+  beatbox_benny: "A frog in a snapback appears on the bar counter. Benny starts beatboxing along to your song. The crowd goes wild. He tips his cap.",
+  serenade_sally: "A white swan glides in, pearls glowing. Sally dabs her eye with a wing. \"That ballad,\" she whispers. \"You made me feel something. That hasn't happened in years.\"",
+  karaoke_king: "The door SLAMS open. A lion wearing an actual crown and cape strides in. The Karaoke King heard there's a challenger worthy of his presence. He sits, crosses his arms, and nods. \"Finally. A real singer.\"",
+  diva_diana: "Peacock feathers fill the doorway. Diana makes her entrance — slow, dramatic, fabulous. Fifteen songs you've done. She fans her feathers. \"You've earned my attention, darling.\"",
+  showstopper_steve: "A wolf in a studded jacket leans against the wall, watching from the shadows. Steve doesn't impress easy. Three standing ovations later, he pushes off the wall. \"Alright. You're legit.\"",
+  legendary_luna: "A golden glow fills the bar. Everyone falls silent. Luna, the legendary eagle in her star-studded cape, descends from myth into Stu's Bar. She's never been seen here before. \"I came for you,\" she says. The bar will never be the same.",
+};
+
+// ── Cut-scene overlay ──
+function CutScene({ superfan, onClose }) {
+  if (!superfan) return null;
+  const text = CUTSCENES[superfan.id] || 'A new fan walks through the door...';
+  return (
+    <div style={{ position:'absolute', inset:0, zIndex:200, display:'flex', flexDirection:'column',
+      justifyContent:'center', alignItems:'center' }}>
+      <div onClick={onClose} style={{ position:'absolute', inset:0,
+        background:'rgba(0,0,0,0.85)', backdropFilter:'blur(8px)', WebkitBackdropFilter:'blur(8px)' }} />
+      <div style={{ position:'relative', zIndex:1, display:'flex', flexDirection:'column',
+        alignItems:'center', padding:'32px 28px', maxWidth:320,
+        animation:'popIn 0.4s cubic-bezier(0.34,1.56,0.64,1) both' }}>
+        <div style={{ width:100, height:100, borderRadius:'50%', overflow:'hidden',
+          border:`3px solid ${superfan.color}`, boxShadow:`0 0 30px ${superfan.color}55`,
+          marginBottom:16 }}>
+          <img src={superfan.img} alt={superfan.name}
+            style={{ width:'100%', height:'100%', objectFit:'cover' }} />
+        </div>
+        <div style={{ fontSize:20, fontWeight:900, color:T.white, marginBottom:4, textAlign:'center' }}>
+          {superfan.name}
+        </div>
+        <div style={{ fontSize:11, fontWeight:800, color:superfan.color, textTransform:'uppercase',
+          letterSpacing:1, marginBottom:16 }}>New OG Unlocked</div>
+        <div style={{ fontSize:13, fontWeight:600, color:'rgba(255,255,255,0.75)', lineHeight:1.7,
+          textAlign:'center', marginBottom:24 }}>{text}</div>
+        <div onClick={onClose} style={{
+          padding:'10px 32px', borderRadius:12, cursor:'pointer',
+          background:`linear-gradient(135deg, ${superfan.color}, ${superfan.color}cc)`,
+          boxShadow:`0 4px 16px ${superfan.color}44`,
+          fontSize:13, fontWeight:900, color:'white', letterSpacing:0.3,
+        }}>Nice</div>
+      </div>
+    </div>
+  );
+}
+
+// ── HUD Detail Sheet ──
+function HudDetailSheet({ type, fans, superfans, onClose, onPlayCutScene }) {
   return (
     <div style={{ position:'absolute', inset:0, zIndex:100 }}>
       <div style={{ position:'absolute', inset:0, background:'rgba(0,0,0,0.55)',
         backdropFilter:'blur(4px)', WebkitBackdropFilter:'blur(4px)' }} onClick={onClose} />
       <div style={{ position:'absolute', bottom:0, left:0, right:0, background:'#1a1008',
-        borderRadius:'24px 24px 0 0', padding:'20px 20px 40px', maxHeight:'70%', overflowY:'auto',
+        borderRadius:'24px 24px 0 0', padding:'20px 20px 40px', maxHeight:'75%', overflowY:'auto',
         border:'1px solid rgba(255,180,80,0.15)', borderBottom:'none',
         animation:'sheetUp 0.32s cubic-bezier(0.34,1.56,0.64,1)' }}>
         <div style={{ width:36, height:4, borderRadius:2, background:'rgba(255,255,255,0.15)',
           margin:'0 auto 20px' }} />
 
-        {type === 'fans' && (
+        {type === 'barlevel' && (() => {
+          const lvl = getBarLevel(superfans.length);
+          const nextThresh = lvl < 10 ? LEVEL_THRESHOLDS[lvl] : null;
+          const pctToNext = nextThresh
+            ? Math.round((superfans.length / nextThresh) * 100)
+            : 100;
+          return (
           <>
-            <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:20 }}>
-              <div style={{ width:48, height:48, borderRadius:14,
-                background:'linear-gradient(135deg,#FF6900,#FFD93D)',
-                display:'flex', alignItems:'center', justifyContent:'center', fontSize:24,
-                boxShadow:'0 4px 16px rgba(255,105,0,0.3)' }}>👥</div>
+            <div style={{ display:'flex', alignItems:'center', gap:14, marginBottom:16 }}>
+              <div style={{ width:56, height:56, borderRadius:16, overflow:'hidden',
+                border:'2px solid rgba(255,180,80,0.3)',
+                boxShadow:'0 4px 16px rgba(255,105,0,0.2)' }}>
+                <img src={`assets/bars/bar-level-${lvl}.jpg`} alt=""
+                  style={{ width:'100%', height:'100%', objectFit:'cover' }} />
+              </div>
               <div>
-                <div style={{ fontSize:28, fontWeight:900, color:T.white }}>{fans.toLocaleString()}</div>
-                <div style={{ fontSize:12, fontWeight:700, color:T.muted }}>Total Fans</div>
+                <div style={{ fontSize:11, fontWeight:800, color:T.muted, textTransform:'uppercase',
+                  letterSpacing:0.8, marginBottom:2 }}>Stu's Bar</div>
+                <div style={{ fontSize:28, fontWeight:900, color:T.white }}>Tier {lvl}</div>
               </div>
             </div>
-            <div style={{ fontSize:13, fontWeight:600, color:'rgba(255,255,255,0.6)', lineHeight:1.7, marginBottom:16 }}>
-              Use your voice, get fans. Every singing action earns fans — full songs, sections, drills, and arcade games.
+
+            <div style={{ display:'flex', gap:12, marginBottom:18 }}>
+              <div style={{ flex:1, padding:'12px 14px', borderRadius:14,
+                background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.06)' }}>
+                <div style={{ fontSize:10, fontWeight:800, color:T.muted, textTransform:'uppercase',
+                  letterSpacing:0.6, marginBottom:4 }}>Total Fans</div>
+                <div style={{ fontSize:22, fontWeight:900, color:T.gold }}>{fans.toLocaleString()}</div>
+              </div>
+              <div style={{ flex:1, padding:'12px 14px', borderRadius:14,
+                background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.06)' }}>
+                <div style={{ fontSize:10, fontWeight:800, color:T.muted, textTransform:'uppercase',
+                  letterSpacing:0.6, marginBottom:4 }}>OG's Found</div>
+                <div style={{ fontSize:22, fontWeight:900, color:T.amber }}>{superfans.length}<span style={{ fontSize:14, color:T.muted }}>/{SUPERFAN_DEFS.length}</span></div>
+              </div>
             </div>
-            <div style={{ fontSize:11, fontWeight:800, color:T.muted, letterSpacing:0.8, textTransform:'uppercase', marginBottom:10 }}>How to earn</div>
+
+            {nextThresh ? (
+              <div style={{ marginBottom:20 }}>
+                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:6 }}>
+                  <span style={{ fontSize:11, fontWeight:800, color:T.muted, textTransform:'uppercase', letterSpacing:0.5 }}>
+                    Next: Tier {lvl + 1}
+                  </span>
+                  <span style={{ fontSize:12, fontWeight:900, color:T.gold }}>
+                    {superfans.length}/{nextThresh} OG's
+                  </span>
+                </div>
+                <div style={{ height:8, borderRadius:4, background:'rgba(255,255,255,0.08)', overflow:'hidden' }}>
+                  <div style={{ height:'100%', borderRadius:4, width:`${pctToNext}%`,
+                    background:`linear-gradient(90deg, ${T.amber}, ${T.gold})`,
+                    transition:'width 600ms ease' }} />
+                </div>
+              </div>
+            ) : (
+              <div style={{ padding:'12px 16px', borderRadius:12, marginBottom:20,
+                background:'rgba(255,200,50,0.08)', border:'1px solid rgba(255,200,50,0.2)' }}>
+                <span style={{ fontSize:13, fontWeight:800, color:T.gold }}>Max tier reached — legendary status!</span>
+              </div>
+            )}
+
+            <div style={{ fontSize:11, fontWeight:800, color:T.muted, letterSpacing:0.8, textTransform:'uppercase', marginBottom:10 }}>How to earn fans</div>
             {[
               { label:'Full song', fans:FAN_REWARDS.fullSong, icon:'🎤' },
               { label:'Section practice', fans:FAN_REWARDS.section, icon:'🎵' },
@@ -218,80 +349,72 @@ function HudDetailSheet({ type, fans, superfans, weeklyMins, onClose }) {
               </div>
             ))}
           </>
-        )}
+          );
+        })()}
 
-        {type === 'superfans' && (
+        {type === 'superfans' && (() => {
+          const lvl = getBarLevel(superfans.length);
+          const nextThresh = lvl < 10 ? LEVEL_THRESHOLDS[lvl] : null;
+          const visibleCount = lvl >= 10 ? SUPERFAN_DEFS.length : LEVEL_THRESHOLDS[lvl];
+          const visible = SUPERFAN_DEFS.slice(0, visibleCount);
+          return (
           <>
-            <div style={{ fontSize:20, fontWeight:900, color:T.white, marginBottom:4 }}>Superfans</div>
-            <div style={{ fontSize:12, fontWeight:600, color:'rgba(255,255,255,0.5)', marginBottom:16, lineHeight:1.5 }}>
-              Perform full songs to win superfans. Bring back the regulars of Stu's bar.
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:4 }}>
+              <div style={{ fontSize:20, fontWeight:900, color:T.white }}>The OG's</div>
+              <div style={{ padding:'4px 10px', borderRadius:8, background:'rgba(255,105,0,0.15)',
+                border:'1px solid rgba(255,105,0,0.2)' }}>
+                <span style={{ fontSize:12, fontWeight:900, color:T.amber }}>Tier {lvl}</span>
+              </div>
             </div>
-            {SUPERFAN_DEFS.map(sf => {
+            <div style={{ fontSize:12, fontWeight:600, color:'rgba(255,255,255,0.5)', marginBottom:6, lineHeight:1.5 }}>
+              Collect OG's to upgrade Stu's bar. {superfans.length}/{visibleCount} found.
+            </div>
+            {nextThresh && (
+              <div style={{ fontSize:11, fontWeight:700, color:T.gold, marginBottom:14 }}>
+                {nextThresh - superfans.length} more OG{nextThresh - superfans.length !== 1 ? "'s" : ''} to reach Tier {lvl+1}
+              </div>
+            )}
+            {visible.map(sf => {
               const earned = superfans.includes(sf.id);
               return (
-                <div key={sf.id} style={{ display:'flex', alignItems:'center', gap:14, padding:'12px 0',
+                <div key={sf.id} style={{ display:'flex', alignItems:'center', gap:14, padding:'10px 0',
                   borderBottom:'1px solid rgba(255,255,255,0.06)', opacity: earned ? 1 : 0.45 }}>
-                  <div style={{ width:48, height:48, borderRadius:14, flexShrink:0,
-                    background: earned ? `linear-gradient(135deg,${sf.color}22,${sf.color}44)` : 'rgba(255,255,255,0.06)',
-                    display:'flex', alignItems:'center', justifyContent:'center', fontSize:26,
-                    border: earned ? `2px solid ${sf.color}40` : '2px solid rgba(255,255,255,0.06)',
-                    filter: earned ? 'none' : 'grayscale(1)' }}>
-                    {sf.avatar}
+                  <div style={{ width:48, height:48, borderRadius:'50%', flexShrink:0, overflow:'hidden',
+                    border: earned ? `2.5px solid ${sf.color}` : '2.5px solid rgba(255,255,255,0.08)',
+                    boxShadow: earned ? `0 0 12px ${sf.color}33` : 'none' }}>
+                    <img src={sf.img} alt={earned ? sf.name : '???'} style={{
+                      width:'100%', height:'100%', objectFit:'cover',
+                      filter: earned ? 'none' : 'grayscale(1) brightness(0.3)',
+                    }} />
                   </div>
-                  <div style={{ flex:1 }}>
-                    <div style={{ fontSize:15, fontWeight:900, color: earned ? T.white : T.muted }}>
+                  <div style={{ flex:1, minWidth:0 }}>
+                    <div style={{ fontSize:14, fontWeight:900, color: earned ? T.white : T.muted }}>
                       {earned ? sf.name : '???'}
                     </div>
                     <div style={{ fontSize:11, fontWeight:600, color:'rgba(255,255,255,0.4)', marginTop:2 }}>{sf.desc}</div>
                   </div>
-                  {earned && <span style={{ fontSize:11, fontWeight:900, color:sf.color }}>Earned</span>}
+                  {earned && (
+                    <div onClick={(e) => { e.stopPropagation(); onPlayCutScene(sf); }}
+                      style={{
+                        width:34, height:34, borderRadius:'50%', flexShrink:0, cursor:'pointer',
+                        background:`${sf.color}22`, border:`1.5px solid ${sf.color}44`,
+                        display:'flex', alignItems:'center', justifyContent:'center',
+                        transition:'transform 120ms ease',
+                      }}
+                      onPointerDown={e => e.currentTarget.style.transform='scale(0.88)'}
+                      onPointerUp={e => e.currentTarget.style.transform='scale(1)'}
+                      onPointerLeave={e => e.currentTarget.style.transform='scale(1)'}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill={sf.color}>
+                        <path d="M8 5v14l11-7z"/>
+                      </svg>
+                    </div>
+                  )}
                 </div>
               );
             })}
           </>
-        )}
-
-        {type === 'minutes' && (
-          <>
-            <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:16 }}>
-              <div style={{ width:48, height:48, borderRadius:14,
-                background:'linear-gradient(135deg,#047857,#10B981)',
-                display:'flex', alignItems:'center', justifyContent:'center', fontSize:24,
-                boxShadow:'0 4px 16px rgba(4,120,87,0.3)' }}>🎙️</div>
-              <div>
-                <div style={{ fontSize:28, fontWeight:900, color:T.white }}>{Math.round(weeklyMins)} min</div>
-                <div style={{ fontSize:12, fontWeight:700, color:T.muted }}>Sung this week</div>
-              </div>
-            </div>
-            <div style={{ height:10, borderRadius:5, background:'rgba(255,255,255,0.08)', overflow:'hidden', marginBottom:8 }}>
-              <div style={{ height:'100%', borderRadius:5,
-                width:`${Math.min(100,(weeklyMins/COACH_GOAL_MINUTES)*100)}%`,
-                background:'linear-gradient(90deg,#047857,#10B981)',
-                transition:'width 600ms ease' }} />
-            </div>
-            <div style={{ fontSize:12, fontWeight:700, color:'rgba(255,255,255,0.5)', marginBottom:20 }}>
-              {weeklyMins >= COACH_GOAL_MINUTES
-                ? 'Coach review unlocked! Tap to claim your 60-sec review.'
-                : `${COACH_GOAL_MINUTES - Math.round(weeklyMins)} more minutes to unlock a 60-sec coach review.`}
-            </div>
-            <div style={{ fontSize:11, fontWeight:800, color:T.muted, letterSpacing:0.8, textTransform:'uppercase', marginBottom:10 }}>What counts</div>
-            {[
-              { label:'Singing a song', icon:'🎤', counts:true },
-              { label:'Singing a section', icon:'🎵', counts:true },
-              { label:'Singing a drill', icon:'💨', counts:true },
-              { label:'Voice arcade (active)', icon:'🕹️', counts:true },
-              { label:'Listening', icon:'🎧', counts:false },
-              { label:'Browsing songs', icon:'📱', counts:false },
-            ].map(r => (
-              <div key={r.label} style={{ display:'flex', alignItems:'center', gap:10, padding:'8px 0',
-                borderBottom:'1px solid rgba(255,255,255,0.06)' }}>
-                <span style={{ fontSize:16 }}>{r.icon}</span>
-                <span style={{ flex:1, fontSize:13, fontWeight:700, color: r.counts ? T.white : T.muted }}>{r.label}</span>
-                <span style={{ fontSize:12, fontWeight:900, color: r.counts ? '#10B981' : 'rgba(255,255,255,0.2)' }}>{r.counts ? 'Yes' : 'No'}</span>
-              </div>
-            ))}
-          </>
-        )}
+          );
+        })()}
       </div>
     </div>
   );
@@ -351,12 +474,132 @@ function TodaySheet({ tasks, onClose, onGoTab }) {
   );
 }
 
+// ── Drag hook — tap vs drag with 5px threshold ──
+function useDrag(onTap) {
+  const posRef = React.useRef({ x: 0, y: 0 });
+  const [pos, setPos] = React.useState({ x: 0, y: 0 });
+  const dragState = React.useRef(null);
+  const tapCb = React.useRef(onTap);
+  tapCb.current = onTap;
+
+  const onPointerDown = React.useCallback((e) => {
+    e.currentTarget.setPointerCapture(e.pointerId);
+    dragState.current = { sx: e.clientX, sy: e.clientY, ox: posRef.current.x, oy: posRef.current.y, moved: false };
+  }, []);
+  const onPointerMove = React.useCallback((e) => {
+    const d = dragState.current;
+    if (!d) return;
+    const dx = e.clientX - d.sx, dy = e.clientY - d.sy;
+    if (!d.moved && (Math.abs(dx) > 5 || Math.abs(dy) > 5)) d.moved = true;
+    if (d.moved) {
+      const next = { x: d.ox + dx, y: d.oy + dy };
+      posRef.current = next;
+      setPos(next);
+    }
+  }, []);
+  const onPointerUp = React.useCallback(() => {
+    const d = dragState.current;
+    dragState.current = null;
+    if (d && !d.moved && tapCb.current) tapCb.current();
+  }, []);
+
+  return { pos, onPointerDown, onPointerMove, onPointerUp };
+}
+
+// ── The OG's — draggable photo wall overlay ──
+function PhotoWall({ superfans, barLevel, onTap }) {
+  const drag = useDrag(onTap);
+
+  const visibleCount = barLevel >= 10 ? SUPERFAN_DEFS.length : LEVEL_THRESHOLDS[barLevel];
+  const visible = SUPERFAN_DEFS.slice(0, visibleCount);
+  const cols = visibleCount <= 4 ? 2 : visibleCount <= 9 ? 3 : visibleCount <= 16 ? 4 : 5;
+
+  return (
+    <div
+      onPointerDown={drag.onPointerDown} onPointerMove={drag.onPointerMove} onPointerUp={drag.onPointerUp}
+      style={{
+        position:'absolute', top:`calc(28% + ${drag.pos.y}px)`, left:`calc(50% + ${drag.pos.x}px)`,
+        transform:'translateX(-50%)',
+        zIndex:6, cursor:'grab', touchAction:'none',
+        userSelect:'none',
+      }}>
+      <div style={{
+        background:'rgba(10,6,2,0.8)',
+        border:'2px solid rgba(255,180,80,0.25)',
+        borderRadius:14, padding:'10px 10px 8px',
+        backdropFilter:'blur(6px)', WebkitBackdropFilter:'blur(6px)',
+        boxShadow:'0 4px 20px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,180,80,0.08)',
+        animation:'popIn 0.5s 0.5s both',
+      }}>
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:4, marginBottom:6 }}>
+          <span style={{ fontSize:9, fontWeight:900, color:T.gold, textTransform:'uppercase', letterSpacing:0.6 }}>
+            The OG's
+          </span>
+          <span style={{ fontSize:9, color:T.muted }}>({superfans.length}/{visibleCount})</span>
+        </div>
+        <div style={{
+          display:'grid', gridTemplateColumns:`repeat(${cols}, 36px)`,
+          gap:3, justifyContent:'center',
+        }}>
+          {visible.map(sf => {
+            const earned = superfans.includes(sf.id);
+            return (
+              <div key={sf.id} style={{
+                width:36, height:36, borderRadius:'50%', overflow:'hidden',
+                border: earned ? `2px solid ${sf.color}` : '2px solid rgba(255,255,255,0.08)',
+                boxShadow: earned ? `0 0 8px ${sf.color}44` : 'none',
+                transition:'all 0.3s ease',
+              }}>
+                <img src={sf.img} alt={earned ? sf.name : '???'}
+                  style={{
+                    width:'100%', height:'100%', objectFit:'cover',
+                    filter: earned ? 'none' : 'grayscale(1) brightness(0.3)',
+                    transition:'filter 0.3s ease',
+                    pointerEvents:'none',
+                  }} />
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Draggable character (Stu / Zeke) — tap to quip, drag to reposition ──
+function DraggableChar({ who, src, height, side, baseStyle, speechChar, speechText, onTap, onDismiss, animDelay }) {
+  const drag = useDrag(onTap);
+  return (
+    <div
+      onPointerDown={drag.onPointerDown} onPointerMove={drag.onPointerMove} onPointerUp={drag.onPointerUp}
+      style={{
+        position:'absolute', zIndex:5, touchAction:'none', cursor:'grab',
+        ...baseStyle,
+        transform:`translate(${drag.pos.x}px, ${drag.pos.y}px)`,
+      }}>
+      <div style={{ position:'relative' }}>
+        {speechChar === who && (
+          <SpeechBubble text={speechText} side={side} onDismiss={onDismiss} />
+        )}
+        <img src={src} alt={who}
+          style={{
+            height, objectFit:'contain',
+            filter:'drop-shadow(0 4px 12px rgba(0,0,0,0.5))',
+            animation:`popIn 0.5s ${animDelay} both`,
+            pointerEvents:'none',
+          }} />
+      </div>
+    </div>
+  );
+}
+
 // ── Bar Home Screen ──
 function BarHome({ fans, superfans, weeklyMins, onGoTab }) {
   const [speechChar, setSpeechChar] = React.useState(null);
   const [speechText, setSpeechText] = React.useState('');
   const [showToday, setShowToday] = React.useState(false);
   const [hudSheet, setHudSheet] = React.useState(null);
+  const [cutSceneSf, setCutSceneSf] = React.useState(null);
 
   const quip = (who) => {
     const quips = who === 'zeke' ? ZEKE_QUIPS : STU_QUIPS;
@@ -389,12 +632,17 @@ function BarHome({ fans, superfans, weeklyMins, onGoTab }) {
     });
   }, []);
 
+  const barLevel = getBarLevel(superfans.length);
+  const barBg = `assets/bars/bar-level-${barLevel}.jpg`;
+  const zekeSrc = getCharSprite('zeke');
+  const stuSrc = getCharSprite('stu');
+
   return (
     <div style={{ width:'100%', height:'100%', position:'relative', overflow:'hidden' }}>
       <audio ref={audioRef} src="smooth_jazz_bar_crowd.wav" loop preload="auto" style={{ display:'none' }} />
       {/* Bar scene background */}
       <div style={{ position:'absolute', inset:0 }}>
-        <img src="bar-scene-empty-level1.png" alt="Stu's Bar"
+        <img src={barBg} alt={`Stu's Bar — Level ${barLevel}`}
           style={{ width:'100%', height:'100%', objectFit:'cover', objectPosition:'center top' }} />
         {/* Warm single overhead light — emphasises the one working lamp */}
         <div style={{ position:'absolute', top:0, left:0, right:0, height:'60%',
@@ -427,46 +675,22 @@ function BarHome({ fans, superfans, weeklyMins, onGoTab }) {
       )}
 
       {/* HUD */}
-      <HUD fans={fans} superfans={superfans} weeklyMins={weeklyMins}
-        weeklyGoal={COACH_GOAL_MINUTES} onTap={setHudSheet} />
+      <HUD fans={fans} superfans={superfans} onTap={setHudSheet} />
 
-      {/* Stu behind bar — positioned upper-left area */}
-      <div style={{ position:'absolute', left:16, bottom:'28%', zIndex:5 }}>
-        <div style={{ position:'relative' }}>
-          {speechChar === 'stu' && (
-            <SpeechBubble text={speechText} side="left" onDismiss={dismissSpeech} />
-          )}
-          <img src="stu-arms-crossed.webp" alt="Stu"
-            onClick={(e) => { e.stopPropagation(); quip('stu'); }}
-            style={{
-              height:130, objectFit:'contain', cursor:'pointer',
-              filter:'drop-shadow(0 4px 12px rgba(0,0,0,0.5))',
-              animation:'popIn 0.5s 0.2s both',
-              transition:'transform 0.15s ease',
-            }}
-            onPointerDown={e => e.currentTarget.style.transform='scale(0.95)'}
-            onPointerLeave={e => e.currentTarget.style.transform='scale(1)'} />
-        </div>
-      </div>
+      {/* The OG's — draggable photo wall, tap opens superfans sheet */}
+      <PhotoWall superfans={superfans} barLevel={barLevel} onTap={() => setHudSheet('superfans')} />
 
-      {/* Zeke standing — positioned right area */}
-      <div style={{ position:'absolute', right:16, bottom:'28%', zIndex:5 }}>
-        <div style={{ position:'relative' }}>
-          {speechChar === 'zeke' && (
-            <SpeechBubble text={speechText} side="right" onDismiss={dismissSpeech} />
-          )}
-          <img src="zeke-standing.webp" alt="Zeke"
-            onClick={(e) => { e.stopPropagation(); quip('zeke'); }}
-            style={{
-              height:160, objectFit:'contain', cursor:'pointer',
-              filter:'drop-shadow(0 4px 12px rgba(0,0,0,0.5))',
-              animation:'popIn 0.5s 0.3s both',
-              transition:'transform 0.15s ease',
-            }}
-            onPointerDown={e => e.currentTarget.style.transform='scale(0.95)'}
-            onPointerLeave={e => e.currentTarget.style.transform='scale(1)'} />
-        </div>
-      </div>
+      {/* Stu behind bar — draggable, tap to quip */}
+      <DraggableChar who="stu" src={stuSrc} height={130} side="left"
+        baseStyle={{ left:16, bottom:'28%' }}
+        speechChar={speechChar} speechText={speechText}
+        onTap={() => quip('stu')} onDismiss={dismissSpeech} animDelay="0.2s" />
+
+      {/* Zeke standing — draggable, tap to quip */}
+      <DraggableChar who="zeke" src={zekeSrc} height={160} side="right"
+        baseStyle={{ right:16, bottom:'28%' }}
+        speechChar={speechChar} speechText={speechText}
+        onTap={() => quip('zeke')} onDismiss={dismissSpeech} animDelay="0.3s" />
 
       {/* Clipboard — pinned top-right below HUD, Supercell quest-board style */}
       <div style={{ position:'absolute', top:62, right:12, zIndex:11 }}>
@@ -502,7 +726,13 @@ function BarHome({ fans, superfans, weeklyMins, onGoTab }) {
       {/* HUD detail sheets */}
       {hudSheet && (
         <HudDetailSheet type={hudSheet} fans={fans} superfans={superfans}
-          weeklyMins={weeklyMins} onClose={() => setHudSheet(null)} />
+          onClose={() => setHudSheet(null)}
+          onPlayCutScene={(sf) => { setHudSheet(null); setCutSceneSf(sf); }} />
+      )}
+
+      {/* Cut-scene overlay */}
+      {cutSceneSf && (
+        <CutScene superfan={cutSceneSf} onClose={() => setCutSceneSf(null)} />
       )}
     </div>
   );
@@ -624,14 +854,23 @@ function BottomNav({ active, onTap }) {
 // ── App Shell ──
 function App() {
   const [tab, setTab] = React.useState('home');
-  const [fans] = React.useState(32);
-  const [superfans] = React.useState(['first_believer']);
+  const [fans, setFans] = React.useState(0);
+  const [superfans, setSuperfans] = React.useState([]);
   const [weeklyMins] = React.useState(18);
 
   const goTab = (t) => setTab(t);
 
   React.useEffect(() => {
-    window.__V5_DEBUG__ = { tab, setTab, goTab };
+    window.__V5_DEBUG__ = {
+      tab, setTab, goTab, setFans, setSuperfans,
+      SUPERFAN_DEFS,
+      // Convenience: jump to a bar level by unlocking the right number of superfans
+      setBarLevel: (lvl) => {
+        const n = LEVEL_THRESHOLDS[Math.min(lvl, 10) - 1] || 0;
+        setSuperfans(SUPERFAN_DEFS.slice(0, n).map(s => s.id));
+        setFans(n * 15);
+      },
+    };
   }, [tab]);
 
   return (
