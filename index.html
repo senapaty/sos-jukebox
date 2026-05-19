@@ -140,9 +140,10 @@ function IOSDevice({ children }) {
   );
 }
 
-// ── HUD capsule (fans + tier) ──
-function HUD({ fans, superfans, onTap }) {
+// ── HUD capsule (fans + tier + weekly vocal coach) ──
+function HUD({ fans, superfans, weeklyMins, weeklyGoal, onTap }) {
   const lvl = getBarLevel(superfans.length);
+  const pct = Math.min(100, Math.round((weeklyMins / weeklyGoal) * 100));
   const press = e => e.currentTarget.style.transform = 'scale(0.93)';
   const release = e => e.currentTarget.style.transform = 'scale(1)';
   return (
@@ -154,7 +155,7 @@ function HUD({ fans, superfans, onTap }) {
         style={{
           display:'inline-flex', alignItems:'center', gap:10,
           background:'rgba(18,10,4,0.9)', border:`1px solid ${T.hudBorder}`,
-          borderRadius:22, padding:'8px 16px',
+          borderRadius:22, padding:'8px 14px',
           boxShadow:'0 6px 18px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,180,80,0.08)',
           backdropFilter:'blur(12px)', WebkitBackdropFilter:'blur(12px)',
           cursor:'pointer', transition:'transform 120ms ease',
@@ -170,6 +171,23 @@ function HUD({ fans, superfans, onTap }) {
           border:'1px solid rgba(255,180,80,0.3)',
         }}>
           <span style={{ fontSize:11, fontWeight:900, color:T.gold, letterSpacing:0.3 }}>Tier {lvl}</span>
+        </div>
+
+        <div style={{ width:1, height:20, background:'rgba(255,255,255,0.10)' }} />
+
+        <div style={{ display:'flex', alignItems:'center', gap:6 }}>
+          <span style={{ fontSize:12 }}>🎙️</span>
+          <div style={{ width:48 }}>
+            <div style={{ display:'flex', justifyContent:'space-between', marginBottom:2 }}>
+              <span style={{ fontSize:8, fontWeight:900, color:T.muted, letterSpacing:0.3 }}>{weeklyMins}/{weeklyGoal}m</span>
+            </div>
+            <div style={{ height:4, borderRadius:2, background:'rgba(255,255,255,0.12)', overflow:'hidden' }}>
+              <div style={{ height:'100%', width:`${pct}%`, borderRadius:2,
+                background: pct >= 100
+                  ? 'linear-gradient(90deg, #10B981, #34D399)'
+                  : `linear-gradient(90deg, ${T.amber}, ${T.gold})` }} />
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -262,7 +280,7 @@ function CutScene({ superfan, onClose }) {
 }
 
 // ── HUD Detail Sheet ──
-function HudDetailSheet({ type, fans, superfans, onClose, onPlayCutScene }) {
+function HudDetailSheet({ type, fans, superfans, weeklyMins, onClose, onPlayCutScene }) {
   return (
     <div style={{ position:'absolute', inset:0, zIndex:100 }}>
       <div style={{ position:'absolute', inset:0, background:'rgba(0,0,0,0.55)',
@@ -333,6 +351,37 @@ function HudDetailSheet({ type, fans, superfans, onClose, onPlayCutScene }) {
                 <span style={{ fontSize:13, fontWeight:800, color:T.gold }}>Max tier reached — legendary status!</span>
               </div>
             )}
+
+            <div style={{ padding:'16px', borderRadius:14, marginBottom:18,
+              background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.06)' }}>
+              <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:8 }}>
+                <span style={{ fontSize:20 }}>🎙️</span>
+                <div style={{ flex:1 }}>
+                  <div style={{ fontSize:13, fontWeight:800, color:T.white }}>Vocal Coach Review</div>
+                  <div style={{ fontSize:11, fontWeight:600, color:T.muted }}>Sing {COACH_GOAL_MINUTES} min this week to unlock</div>
+                </div>
+                <span style={{ fontSize:14, fontWeight:900, color: weeklyMins >= COACH_GOAL_MINUTES ? '#10B981' : T.gold }}>
+                  {Math.round(weeklyMins)}/{COACH_GOAL_MINUTES}m
+                </span>
+              </div>
+              <div style={{ height:8, borderRadius:4, background:'rgba(255,255,255,0.08)', overflow:'hidden' }}>
+                <div style={{ height:'100%', borderRadius:4,
+                  width:`${Math.min(100,(weeklyMins/COACH_GOAL_MINUTES)*100)}%`,
+                  background: weeklyMins >= COACH_GOAL_MINUTES
+                    ? 'linear-gradient(90deg, #047857, #10B981)'
+                    : `linear-gradient(90deg, ${T.amber}, ${T.gold})`,
+                  transition:'width 600ms ease' }} />
+              </div>
+              {weeklyMins >= COACH_GOAL_MINUTES ? (
+                <div style={{ fontSize:11, fontWeight:700, color:'#10B981', marginTop:6 }}>
+                  Coach review unlocked! Tap to claim your 60-sec review.
+                </div>
+              ) : (
+                <div style={{ fontSize:11, fontWeight:600, color:T.muted, marginTop:6 }}>
+                  {COACH_GOAL_MINUTES - Math.round(weeklyMins)} more minutes to unlock
+                </div>
+              )}
+            </div>
 
             <div style={{ fontSize:11, fontWeight:800, color:T.muted, letterSpacing:0.8, textTransform:'uppercase', marginBottom:10 }}>How to earn fans</div>
             {[
@@ -675,7 +724,8 @@ function BarHome({ fans, superfans, weeklyMins, onGoTab }) {
       )}
 
       {/* HUD */}
-      <HUD fans={fans} superfans={superfans} onTap={setHudSheet} />
+      <HUD fans={fans} superfans={superfans} weeklyMins={weeklyMins}
+        weeklyGoal={COACH_GOAL_MINUTES} onTap={setHudSheet} />
 
       {/* The OG's — draggable photo wall, tap opens superfans sheet */}
       <PhotoWall superfans={superfans} barLevel={barLevel} onTap={() => setHudSheet('superfans')} />
@@ -726,6 +776,7 @@ function BarHome({ fans, superfans, weeklyMins, onGoTab }) {
       {/* HUD detail sheets */}
       {hudSheet && (
         <HudDetailSheet type={hudSheet} fans={fans} superfans={superfans}
+          weeklyMins={weeklyMins}
           onClose={() => setHudSheet(null)}
           onPlayCutScene={(sf) => { setHudSheet(null); setCutSceneSf(sf); }} />
       )}
