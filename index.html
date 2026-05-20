@@ -16,6 +16,8 @@
   @keyframes sheetUp { from { transform:translateY(100%); opacity:0; } to { transform:translateY(0); opacity:1; } }
   .snap-x { scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; scrollbar-width:none; -ms-overflow-style:none; }
   .snap-x::-webkit-scrollbar { display:none; }
+  .no-scrollbar { scrollbar-width:none; -ms-overflow-style:none; }
+  .no-scrollbar::-webkit-scrollbar { display:none; }
 </style>
 </head>
 <body>
@@ -174,23 +176,29 @@ function HUD({ fans, superfans, weeklyMins, weeklyGoal, onTap }) {
       background:'linear-gradient(to bottom, rgba(15,8,2,0.96) 0%, rgba(15,8,2,0.8) 70%, transparent 100%)' }}>
       <div style={{ display:'flex', gap:8, alignItems:'stretch' }}>
 
-        {/* Main capsule: Fans + Bar Level */}
+        {/* Main capsule: Fans + Superfans + Bar Level */}
         <div onClick={() => onTap?.('barlevel')}
           onPointerDown={press} onPointerUp={release} onPointerLeave={release}
-          style={{ ...capsule, flex:1 }}>
-          <span style={{ fontSize:22 }}>👥</span>
-          <span style={{ fontSize:24, fontWeight:900, color:T.gold,
-            textShadow:'0 2px 4px rgba(0,0,0,0.6), 0 0 14px rgba(255,210,60,0.25)' }}>
+          style={{ ...capsule, flex:1, gap:7, justifyContent:'center' }}>
+          <span style={{ fontSize:16 }}>👥</span>
+          <span style={{ fontSize:20, fontWeight:900, color:T.gold,
+            textShadow:'0 2px 4px rgba(0,0,0,0.6), 0 0 12px rgba(255,210,60,0.25)' }}>
             {fans.toLocaleString()}
           </span>
-          <div style={{ width:2, height:24, background:'rgba(255,180,80,0.2)', borderRadius:1 }} />
+          <div style={{ width:1.5, height:20, background:'rgba(255,180,80,0.2)', borderRadius:1 }} />
+          <span style={{ fontSize:16 }}>⭐</span>
+          <span style={{ fontSize:20, fontWeight:900, color:T.amber,
+            textShadow:'0 2px 4px rgba(0,0,0,0.6)' }}>
+            {superfans.length}
+          </span>
+          <div style={{ width:1.5, height:20, background:'rgba(255,180,80,0.2)', borderRadius:1 }} />
           <div style={{
-            padding:'5px 14px', borderRadius:12,
+            padding:'3px 10px', borderRadius:10,
             background:'linear-gradient(135deg, rgba(255,105,0,0.45), rgba(255,200,50,0.25))',
             border:'1.5px solid rgba(255,180,80,0.5)',
             boxShadow:'inset 0 1px 0 rgba(255,220,120,0.2), 0 2px 6px rgba(255,105,0,0.2)',
           }}>
-            <span style={{ fontSize:16, fontWeight:900, color:T.gold, letterSpacing:0.5,
+            <span style={{ fontSize:14, fontWeight:900, color:T.gold, letterSpacing:0.5,
               textShadow:'0 1px 3px rgba(0,0,0,0.5)' }}>
               Lv.{lvl}
             </span>
@@ -200,11 +208,11 @@ function HUD({ fans, superfans, weeklyMins, weeklyGoal, onTap }) {
         {/* Vocal Coach capsule */}
         <div onClick={() => onTap?.('coach')}
           onPointerDown={press} onPointerUp={release} onPointerLeave={release}
-          style={{ ...capsule, flexShrink:0, gap:8 }}>
-          <span style={{ fontSize:20 }}>🎙️</span>
+          style={{ ...capsule, flexShrink:0, gap:7 }}>
+          <span style={{ fontSize:16 }}>🎙️</span>
           <div style={{ width:58 }}>
             <div style={{ display:'flex', justifyContent:'space-between', marginBottom:3 }}>
-              <span style={{ fontSize:14, fontWeight:900,
+              <span style={{ fontSize:13, fontWeight:900,
                 color: pct >= 100 ? '#10B981' : T.gold, letterSpacing:0.3,
                 textShadow:'0 1px 3px rgba(0,0,0,0.4)' }}>
                 {weeklyMins}/{weeklyGoal}m
@@ -328,7 +336,7 @@ function HudDetailSheet({ type, fans, superfans, weeklyMins, onClose, onPlayCutS
     <div style={{ position:'absolute', inset:0, zIndex:100 }}>
       <div style={{ position:'absolute', inset:0, background:'rgba(0,0,0,0.55)',
         backdropFilter:'blur(4px)', WebkitBackdropFilter:'blur(4px)' }} onClick={onClose} />
-      <div style={{ position:'absolute', bottom:0, left:0, right:0, background:'#1a1008',
+      <div className="no-scrollbar" style={{ position:'absolute', bottom:0, left:0, right:0, background:'#1a1008',
         borderRadius:'24px 24px 0 0', padding:'20px 0 40px', maxHeight:'80%', overflowY:'auto',
         border:'1px solid rgba(255,180,80,0.15)', borderBottom:'none',
         animation:'sheetUp 0.32s cubic-bezier(0.34,1.56,0.64,1)' }}>
@@ -455,21 +463,12 @@ function HudDetailSheet({ type, fans, superfans, weeklyMins, onClose, onPlayCutS
                 </div>
               </div>
 
-              <div style={{ fontSize:11, fontWeight:800, color:T.muted, letterSpacing:0.8,
-                textTransform:'uppercase', marginBottom:10 }}>How to earn fans</div>
-              {[
-                { label:'Full song', fans:FAN_REWARDS.fullSong, icon:'🎤' },
-                { label:'Section practice', fans:FAN_REWARDS.section, icon:'🎵' },
-                { label:'Arcade game', fans:FAN_REWARDS.arcade, icon:'🕹️' },
-                { label:'Drill / exercise', fans:FAN_REWARDS.drill, icon:'💨' },
-              ].map(r => (
-                <div key={r.label} style={{ display:'flex', alignItems:'center', gap:10, padding:'10px 0',
-                  borderBottom:'1px solid rgba(255,255,255,0.06)' }}>
-                  <span style={{ fontSize:18 }}>{r.icon}</span>
-                  <span style={{ flex:1, fontSize:14, fontWeight:700, color:T.white }}>{r.label}</span>
-                  <span style={{ fontSize:13, fontWeight:900, color:T.brand }}>+{r.fans} fans</span>
-                </div>
-              ))}
+              <div style={{ padding:'14px 16px', borderRadius:12, marginTop:4,
+                background:'rgba(255,200,50,0.06)', border:'1px solid rgba(255,200,50,0.12)' }}>
+                <span style={{ fontSize:13, fontWeight:700, color:T.muted }}>
+                  Sing, play, and practice to earn fans — every action counts!
+                </span>
+              </div>
             </div>
           </>
           );
@@ -617,7 +616,7 @@ function TodaySheet({ tasks, onClose, onGoTab }) {
         borderRadius:'24px 24px 0 0', padding:'20px 16px 40px',
         border:'1px solid rgba(255,180,80,0.15)', borderBottom:'none',
         animation:'sheetUp 0.35s cubic-bezier(0.16,1,0.3,1) both',
-        maxHeight:'60%', overflowY:'auto' }}>
+        maxHeight:'60%', overflowY:'auto' }} className="no-scrollbar">
         <div style={{ width:36, height:4, borderRadius:2, background:'rgba(255,255,255,0.15)',
           margin:'0 auto 16px' }} />
         <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:16 }}>
