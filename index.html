@@ -489,9 +489,10 @@ const CUTSCENES = {
 
 // ── Cut-scene overlay — multi-dialog, tap to advance ──
 function CutScene({ superfan, onClose }) {
+  const [step, setStep] = React.useState(0);
+  React.useEffect(() => { setStep(0); }, [superfan]);
   if (!superfan) return null;
   const lines = CUTSCENES[superfan.id] || ['A new fan walks through the door...'];
-  const [step, setStep] = React.useState(0);
   const isLast = step >= lines.length - 1;
 
   const advance = () => {
