@@ -14,6 +14,8 @@
   @keyframes floatY { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-6px); } }
   @keyframes speechIn { 0% { transform:scale(0) translateY(10px); opacity:0; } 60% { transform:scale(1.05) translateY(-2px); } 100% { transform:scale(1) translateY(0); opacity:1; } }
   @keyframes sheetUp { from { transform:translateY(100%); opacity:0; } to { transform:translateY(0); opacity:1; } }
+  .snap-x { scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; scrollbar-width:none; -ms-overflow-style:none; }
+  .snap-x::-webkit-scrollbar { display:none; }
 </style>
 </head>
 <body>
@@ -108,8 +110,20 @@ const SUPERFAN_DEFS = [
     desc:'The final superfan — only legends attract her' },
 ];
 
-// Level thresholds: superfans needed to reach each bar level
-const LEVEL_THRESHOLDS = [0, 1, 2, 4, 6, 8, 10, 13, 16, 20];
+// Level requirements: what's needed to reach each bar level
+const LEVEL_REQUIREMENTS = [
+  { level:1, ogs:0, fans:0, gates:[] },
+  { level:2, ogs:1, fans:10, gates:[] },
+  { level:3, ogs:2, fans:30, gates:[{ id:'sing_one', label:'Sing 1 full song', icon:'🎤' }] },
+  { level:4, ogs:4, fans:60, gates:[{ id:'score_50', label:'Score 50%+ on a song', icon:'⭐' }] },
+  { level:5, ogs:6, fans:100, gates:[{ id:'arcade_3', label:'Play 3 arcade games', icon:'🕹️' }] },
+  { level:6, ogs:8, fans:150, gates:[{ id:'score_70', label:'Score 70%+ on a song', icon:'⭐' },{ id:'drill_5', label:'Complete 5 drills', icon:'💨' }] },
+  { level:7, ogs:10, fans:220, gates:[{ id:'songs_5', label:'Sing 5 different songs', icon:'🎵' }] },
+  { level:8, ogs:13, fans:300, gates:[{ id:'score_80', label:'Score 80%+ on a song', icon:'⭐' },{ id:'streak_3', label:'3-day singing streak', icon:'🔥' }] },
+  { level:9, ogs:16, fans:400, gates:[{ id:'score_90', label:'Score 90%+ on any song', icon:'🌟' },{ id:'songs_10', label:'Sing 10 different songs', icon:'🎵' }] },
+  { level:10, ogs:20, fans:500, gates:[{ id:'score_95', label:'Score 95%+ on any song', icon:'👑' },{ id:'arcade_10', label:'Win 10 arcade games', icon:'🕹️' },{ id:'streak_7', label:'7-day streak', icon:'🔥' }] },
+];
+const LEVEL_THRESHOLDS = LEVEL_REQUIREMENTS.map(r => r.ogs);
 function getBarLevel(superfanCount) {
   for (let i = LEVEL_THRESHOLDS.length - 1; i >= 0; i--) {
     if (superfanCount >= LEVEL_THRESHOLDS[i]) return i + 1;
@@ -138,56 +152,75 @@ function IOSDevice({ children }) {
   );
 }
 
-// ── HUD capsule (fans + tier + weekly vocal coach) ──
+// ── HUD — Supercell-style gamey bar with two capsules ──
 function HUD({ fans, superfans, weeklyMins, weeklyGoal, onTap }) {
   const lvl = getBarLevel(superfans.length);
   const pct = Math.min(100, Math.round((weeklyMins / weeklyGoal) * 100));
   const press = e => e.currentTarget.style.transform = 'scale(0.93)';
   const release = e => e.currentTarget.style.transform = 'scale(1)';
-  const sep = <div style={{ width:1, height:20, background:'rgba(255,255,255,0.10)' }} />;
+
+  const capsule = {
+    display:'flex', alignItems:'center', gap:10,
+    background:'linear-gradient(180deg, rgba(30,18,6,0.95) 0%, rgba(18,10,4,0.95) 100%)',
+    border:'2px solid rgba(255,180,80,0.3)',
+    borderRadius:18, padding:'6px 14px',
+    boxShadow:'0 6px 20px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,200,100,0.12), inset 0 -2px 0 rgba(0,0,0,0.3)',
+    cursor:'pointer', transition:'transform 120ms ease',
+  };
+
   return (
     <div style={{ position:'absolute', top:0, left:0, right:0, zIndex:10,
-      padding:'12px 12px 10px',
-      background:'linear-gradient(to bottom, rgba(15,8,2,0.96) 0%, rgba(15,8,2,0.75) 70%, transparent 100%)' }}>
-      <div onClick={() => onTap?.('barlevel')}
-        onPointerDown={press} onPointerUp={release} onPointerLeave={release}
-        style={{
-          display:'inline-flex', alignItems:'center', gap:10,
-          background:'rgba(18,10,4,0.9)', border:`1px solid ${T.hudBorder}`,
-          borderRadius:22, padding:'8px 14px',
-          boxShadow:'0 6px 18px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,180,80,0.08)',
-          backdropFilter:'blur(12px)', WebkitBackdropFilter:'blur(12px)',
-          cursor:'pointer', transition:'transform 120ms ease',
-        }}>
-        <span style={{ fontSize:14 }}>👥</span>
-        <span style={{ fontSize:17, fontWeight:900, color:T.gold }}>{fans}</span>
+      padding:'8px 12px 6px',
+      background:'linear-gradient(to bottom, rgba(15,8,2,0.96) 0%, rgba(15,8,2,0.8) 70%, transparent 100%)' }}>
+      <div style={{ display:'flex', gap:8, alignItems:'stretch' }}>
 
-        {sep}
-
-        <div style={{
-          padding:'3px 9px', borderRadius:10,
-          background:'linear-gradient(135deg, rgba(255,105,0,0.25), rgba(255,200,50,0.15))',
-          border:'1px solid rgba(255,180,80,0.3)',
-        }}>
-          <span style={{ fontSize:11, fontWeight:900, color:T.gold, letterSpacing:0.3 }}>Tier {lvl}</span>
+        {/* Main capsule: Fans + Bar Level */}
+        <div onClick={() => onTap?.('barlevel')}
+          onPointerDown={press} onPointerUp={release} onPointerLeave={release}
+          style={{ ...capsule, flex:1 }}>
+          <span style={{ fontSize:22 }}>👥</span>
+          <span style={{ fontSize:24, fontWeight:900, color:T.gold,
+            textShadow:'0 2px 4px rgba(0,0,0,0.6), 0 0 14px rgba(255,210,60,0.25)' }}>
+            {fans.toLocaleString()}
+          </span>
+          <div style={{ width:2, height:24, background:'rgba(255,180,80,0.2)', borderRadius:1 }} />
+          <div style={{
+            padding:'5px 14px', borderRadius:12,
+            background:'linear-gradient(135deg, rgba(255,105,0,0.45), rgba(255,200,50,0.25))',
+            border:'1.5px solid rgba(255,180,80,0.5)',
+            boxShadow:'inset 0 1px 0 rgba(255,220,120,0.2), 0 2px 6px rgba(255,105,0,0.2)',
+          }}>
+            <span style={{ fontSize:16, fontWeight:900, color:T.gold, letterSpacing:0.5,
+              textShadow:'0 1px 3px rgba(0,0,0,0.5)' }}>
+              Lv.{lvl}
+            </span>
+          </div>
         </div>
 
-        {sep}
-
-        <div style={{ display:'flex', alignItems:'center', gap:6 }}>
-          <span style={{ fontSize:12 }}>🎙️</span>
-          <div style={{ width:48 }}>
-            <div style={{ display:'flex', justifyContent:'space-between', marginBottom:2 }}>
-              <span style={{ fontSize:8, fontWeight:900, color:T.muted, letterSpacing:0.3 }}>{weeklyMins}/{weeklyGoal}m</span>
+        {/* Vocal Coach capsule */}
+        <div onClick={() => onTap?.('coach')}
+          onPointerDown={press} onPointerUp={release} onPointerLeave={release}
+          style={{ ...capsule, flexShrink:0, gap:8 }}>
+          <span style={{ fontSize:20 }}>🎙️</span>
+          <div style={{ width:58 }}>
+            <div style={{ display:'flex', justifyContent:'space-between', marginBottom:3 }}>
+              <span style={{ fontSize:14, fontWeight:900,
+                color: pct >= 100 ? '#10B981' : T.gold, letterSpacing:0.3,
+                textShadow:'0 1px 3px rgba(0,0,0,0.4)' }}>
+                {weeklyMins}/{weeklyGoal}m
+              </span>
             </div>
-            <div style={{ height:4, borderRadius:2, background:'rgba(255,255,255,0.12)', overflow:'hidden' }}>
-              <div style={{ height:'100%', width:`${pct}%`, borderRadius:2,
+            <div style={{ height:6, borderRadius:3, background:'rgba(255,255,255,0.12)', overflow:'hidden' }}>
+              <div style={{ height:'100%', width:`${pct}%`, borderRadius:3,
                 background: pct >= 100
                   ? 'linear-gradient(90deg, #10B981, #34D399)'
-                  : `linear-gradient(90deg, ${T.amber}, ${T.gold})` }} />
+                  : `linear-gradient(90deg, ${T.amber}, ${T.gold})`,
+                boxShadow: pct >= 100 ? '0 0 8px rgba(16,185,129,0.5)' : '0 0 6px rgba(255,210,60,0.3)',
+              }} />
             </div>
           </div>
         </div>
+
       </div>
     </div>
   );
@@ -281,122 +314,230 @@ function CutScene({ superfan, onClose }) {
 // ── HUD Detail Sheet ──
 function HudDetailSheet({ type, fans, superfans, weeklyMins, onClose, onPlayCutScene }) {
   const lvl = getBarLevel(superfans.length);
+  const scrollRef = React.useRef(null);
   const nextThresh = lvl < 10 ? LEVEL_THRESHOLDS[lvl] : null;
+
+  React.useEffect(() => {
+    if (type === 'barlevel' && scrollRef.current) {
+      const card = scrollRef.current.children[lvl - 1];
+      if (card) setTimeout(() => card.scrollIntoView({ behavior:'smooth', inline:'center', block:'nearest' }), 80);
+    }
+  }, [type, lvl]);
+
   return (
     <div style={{ position:'absolute', inset:0, zIndex:100 }}>
       <div style={{ position:'absolute', inset:0, background:'rgba(0,0,0,0.55)',
         backdropFilter:'blur(4px)', WebkitBackdropFilter:'blur(4px)' }} onClick={onClose} />
       <div style={{ position:'absolute', bottom:0, left:0, right:0, background:'#1a1008',
-        borderRadius:'24px 24px 0 0', padding:'20px 20px 40px', maxHeight:'75%', overflowY:'auto',
+        borderRadius:'24px 24px 0 0', padding:'20px 0 40px', maxHeight:'80%', overflowY:'auto',
         border:'1px solid rgba(255,180,80,0.15)', borderBottom:'none',
         animation:'sheetUp 0.32s cubic-bezier(0.34,1.56,0.64,1)' }}>
         <div style={{ width:36, height:4, borderRadius:2, background:'rgba(255,255,255,0.15)',
-          margin:'0 auto 20px' }} />
+          margin:'0 auto 16px' }} />
 
         {type === 'barlevel' && (() => {
-          const pctToNext = nextThresh
-            ? Math.round((superfans.length / nextThresh) * 100)
-            : 100;
           return (
           <>
-            <div style={{ display:'flex', alignItems:'center', gap:14, marginBottom:16 }}>
-              <div style={{ width:56, height:56, borderRadius:16, overflow:'hidden',
-                border:'2px solid rgba(255,180,80,0.3)',
-                boxShadow:'0 4px 16px rgba(255,105,0,0.2)' }}>
-                <img src={`assets/bars/bar-level-${lvl}.jpg`} alt=""
-                  style={{ width:'100%', height:'100%', objectFit:'cover' }} />
+            <div style={{ padding:'0 20px', marginBottom:14 }}>
+              <div style={{ fontSize:22, fontWeight:900, color:T.white,
+                textShadow:'0 2px 4px rgba(0,0,0,0.5)' }}>Stu's Bar</div>
+              <div style={{ fontSize:12, fontWeight:700, color:T.muted, marginTop:2 }}>
+                Swipe to preview bar levels
               </div>
+            </div>
+
+            {/* Swipeable bar level cards */}
+            <div ref={scrollRef} className="snap-x" style={{
+              display:'flex', overflowX:'auto', gap:14,
+              padding:'0 20px 4px', marginBottom:18,
+            }}>
+              {LEVEL_REQUIREMENTS.map((req, i) => {
+                const isCurrent = i + 1 === lvl;
+                const isUnlocked = i + 1 <= lvl;
+                return (
+                  <div key={i} style={{
+                    scrollSnapAlign:'center', flexShrink:0, width:'82%',
+                    borderRadius:18, overflow:'hidden',
+                    background: isCurrent ? 'rgba(255,180,80,0.08)' : 'rgba(255,255,255,0.03)',
+                    border: isCurrent ? '2px solid rgba(255,180,80,0.4)' : '1.5px solid rgba(255,255,255,0.08)',
+                    boxShadow: isCurrent ? '0 0 20px rgba(255,150,50,0.15)' : 'none',
+                  }}>
+                    <div style={{ position:'relative', height:140, overflow:'hidden' }}>
+                      <img src={`assets/bars/bar-level-${i+1}.jpg`} alt=""
+                        style={{ width:'100%', height:'100%', objectFit:'cover',
+                          filter: isUnlocked ? 'none' : 'grayscale(0.7) brightness(0.5)' }} />
+                      <div style={{ position:'absolute', inset:0,
+                        background:'linear-gradient(to bottom, transparent 40%, rgba(26,16,8,0.9) 100%)' }} />
+                      <div style={{ position:'absolute', bottom:8, left:12, right:12,
+                        display:'flex', alignItems:'center', gap:8 }}>
+                        <div style={{
+                          padding:'3px 10px', borderRadius:10,
+                          background: isCurrent
+                            ? 'linear-gradient(135deg, rgba(255,105,0,0.6), rgba(255,200,50,0.4))'
+                            : isUnlocked ? 'rgba(16,185,129,0.3)' : 'rgba(255,255,255,0.1)',
+                          border: isCurrent ? '1.5px solid rgba(255,180,80,0.5)' : '1px solid rgba(255,255,255,0.15)',
+                        }}>
+                          <span style={{ fontSize:11, fontWeight:900,
+                            color: isCurrent ? T.gold : isUnlocked ? '#34D399' : T.muted }}>
+                            {isCurrent ? '★ Current' : isUnlocked ? '✓ Done' : '🔒'}
+                          </span>
+                        </div>
+                        <span style={{ fontSize:16, fontWeight:900, color:T.white,
+                          textShadow:'0 2px 4px rgba(0,0,0,0.7)' }}>
+                          Bar Level {i+1}
+                        </span>
+                      </div>
+                    </div>
+                    <div style={{ padding:'12px 14px' }}>
+                      {i === 0 ? (
+                        <div style={{ fontSize:12, fontWeight:700, color:'#34D399' }}>
+                          Starting point — everyone begins here!
+                        </div>
+                      ) : (
+                        <div style={{ display:'flex', flexDirection:'column', gap:6 }}>
+                          <div style={{ fontSize:10, fontWeight:800, color:T.muted,
+                            textTransform:'uppercase', letterSpacing:0.5, marginBottom:2 }}>Requirements</div>
+                          <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
+                            <div style={{ display:'flex', alignItems:'center', gap:4,
+                              padding:'3px 10px', borderRadius:8,
+                              background:'rgba(255,200,50,0.08)', border:'1px solid rgba(255,200,50,0.15)' }}>
+                              <span style={{ fontSize:11 }}>⭐</span>
+                              <span style={{ fontSize:11, fontWeight:800, color:T.gold }}>
+                                {req.ogs} OG{req.ogs !== 1 ? "'s" : ''}
+                              </span>
+                            </div>
+                            {req.fans > 0 && (
+                              <div style={{ display:'flex', alignItems:'center', gap:4,
+                                padding:'3px 10px', borderRadius:8,
+                                background:'rgba(255,105,0,0.08)', border:'1px solid rgba(255,105,0,0.15)' }}>
+                                <span style={{ fontSize:11 }}>👥</span>
+                                <span style={{ fontSize:11, fontWeight:800, color:T.amber }}>
+                                  {req.fans} fans
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                          {req.gates.length > 0 && (
+                            <div style={{ display:'flex', flexDirection:'column', gap:4, marginTop:2 }}>
+                              {req.gates.map(g => (
+                                <div key={g.id} style={{ display:'flex', alignItems:'center', gap:6 }}>
+                                  <span style={{ fontSize:11 }}>{g.icon}</span>
+                                  <span style={{ fontSize:11, fontWeight:700,
+                                    color:'rgba(255,255,255,0.55)' }}>{g.label}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Stats row */}
+            <div style={{ padding:'0 20px' }}>
+              <div style={{ display:'flex', gap:12, marginBottom:18 }}>
+                <div style={{ flex:1, padding:'12px 14px', borderRadius:14,
+                  background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.06)' }}>
+                  <div style={{ fontSize:10, fontWeight:800, color:T.muted, textTransform:'uppercase',
+                    letterSpacing:0.6, marginBottom:4 }}>Total Fans</div>
+                  <div style={{ fontSize:22, fontWeight:900, color:T.gold }}>{fans.toLocaleString()}</div>
+                </div>
+                <div style={{ flex:1, padding:'12px 14px', borderRadius:14,
+                  background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.06)' }}>
+                  <div style={{ fontSize:10, fontWeight:800, color:T.muted, textTransform:'uppercase',
+                    letterSpacing:0.6, marginBottom:4 }}>OG's Found</div>
+                  <div style={{ fontSize:22, fontWeight:900, color:T.amber }}>
+                    {superfans.length}<span style={{ fontSize:14, color:T.muted }}>/{SUPERFAN_DEFS.length}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ fontSize:11, fontWeight:800, color:T.muted, letterSpacing:0.8,
+                textTransform:'uppercase', marginBottom:10 }}>How to earn fans</div>
+              {[
+                { label:'Full song', fans:FAN_REWARDS.fullSong, icon:'🎤' },
+                { label:'Section practice', fans:FAN_REWARDS.section, icon:'🎵' },
+                { label:'Arcade game', fans:FAN_REWARDS.arcade, icon:'🕹️' },
+                { label:'Drill / exercise', fans:FAN_REWARDS.drill, icon:'💨' },
+              ].map(r => (
+                <div key={r.label} style={{ display:'flex', alignItems:'center', gap:10, padding:'10px 0',
+                  borderBottom:'1px solid rgba(255,255,255,0.06)' }}>
+                  <span style={{ fontSize:18 }}>{r.icon}</span>
+                  <span style={{ flex:1, fontSize:14, fontWeight:700, color:T.white }}>{r.label}</span>
+                  <span style={{ fontSize:13, fontWeight:900, color:T.brand }}>+{r.fans} fans</span>
+                </div>
+              ))}
+            </div>
+          </>
+          );
+        })()}
+
+        {type === 'coach' && (() => {
+          const pct = Math.min(100, Math.round((weeklyMins / COACH_GOAL_MINUTES) * 100));
+          return (
+          <div style={{ padding:'0 20px' }}>
+            <div style={{ display:'flex', alignItems:'center', gap:14, marginBottom:20 }}>
+              <div style={{ width:56, height:56, borderRadius:16,
+                background:'linear-gradient(135deg, rgba(255,105,0,0.2), rgba(255,200,50,0.1))',
+                display:'flex', alignItems:'center', justifyContent:'center', fontSize:28 }}>🎙️</div>
               <div>
                 <div style={{ fontSize:11, fontWeight:800, color:T.muted, textTransform:'uppercase',
-                  letterSpacing:0.8, marginBottom:2 }}>Stu's Bar</div>
-                <div style={{ fontSize:28, fontWeight:900, color:T.white }}>Tier {lvl}</div>
+                  letterSpacing:0.8, marginBottom:2 }}>Weekly Goal</div>
+                <div style={{ fontSize:24, fontWeight:900, color:T.white }}>Vocal Coach</div>
               </div>
             </div>
-
-            <div style={{ display:'flex', gap:12, marginBottom:18 }}>
-              <div style={{ flex:1, padding:'12px 14px', borderRadius:14,
-                background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.06)' }}>
-                <div style={{ fontSize:10, fontWeight:800, color:T.muted, textTransform:'uppercase',
-                  letterSpacing:0.6, marginBottom:4 }}>Total Fans</div>
-                <div style={{ fontSize:22, fontWeight:900, color:T.gold }}>{fans.toLocaleString()}</div>
-              </div>
-              <div style={{ flex:1, padding:'12px 14px', borderRadius:14,
-                background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.06)' }}>
-                <div style={{ fontSize:10, fontWeight:800, color:T.muted, textTransform:'uppercase',
-                  letterSpacing:0.6, marginBottom:4 }}>OG's Found</div>
-                <div style={{ fontSize:22, fontWeight:900, color:T.amber }}>{superfans.length}<span style={{ fontSize:14, color:T.muted }}>/{SUPERFAN_DEFS.length}</span></div>
-              </div>
-            </div>
-
-            {nextThresh ? (
-              <div style={{ marginBottom:20 }}>
-                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:6 }}>
-                  <span style={{ fontSize:11, fontWeight:800, color:T.muted, textTransform:'uppercase', letterSpacing:0.5 }}>
-                    Next: Tier {lvl + 1}
-                  </span>
-                  <span style={{ fontSize:12, fontWeight:900, color:T.gold }}>
-                    {superfans.length}/{nextThresh} OG's
-                  </span>
-                </div>
-                <div style={{ height:8, borderRadius:4, background:'rgba(255,255,255,0.08)', overflow:'hidden' }}>
-                  <div style={{ height:'100%', borderRadius:4, width:`${pctToNext}%`,
-                    background:`linear-gradient(90deg, ${T.amber}, ${T.gold})`,
-                    transition:'width 600ms ease' }} />
-                </div>
-              </div>
-            ) : (
-              <div style={{ padding:'12px 16px', borderRadius:12, marginBottom:20,
-                background:'rgba(255,200,50,0.08)', border:'1px solid rgba(255,200,50,0.2)' }}>
-                <span style={{ fontSize:13, fontWeight:800, color:T.gold }}>Max tier reached — legendary status!</span>
-              </div>
-            )}
 
             <div style={{ padding:'16px', borderRadius:14, marginBottom:18,
               background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.06)' }}>
-              <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:8 }}>
-                <span style={{ fontSize:20 }}>🎙️</span>
-                <div style={{ flex:1 }}>
-                  <div style={{ fontSize:13, fontWeight:800, color:T.white }}>Vocal Coach Review</div>
-                  <div style={{ fontSize:11, fontWeight:600, color:T.muted }}>Sing {COACH_GOAL_MINUTES} min this week to unlock</div>
-                </div>
-                <span style={{ fontSize:14, fontWeight:900, color: weeklyMins >= COACH_GOAL_MINUTES ? '#10B981' : T.gold }}>
+              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:8 }}>
+                <span style={{ fontSize:13, fontWeight:800, color:T.white }}>
+                  Sing {COACH_GOAL_MINUTES} min this week
+                </span>
+                <span style={{ fontSize:16, fontWeight:900,
+                  color: weeklyMins >= COACH_GOAL_MINUTES ? '#10B981' : T.gold }}>
                   {Math.round(weeklyMins)}/{COACH_GOAL_MINUTES}m
                 </span>
               </div>
-              <div style={{ height:8, borderRadius:4, background:'rgba(255,255,255,0.08)', overflow:'hidden' }}>
-                <div style={{ height:'100%', borderRadius:4,
-                  width:`${Math.min(100,(weeklyMins/COACH_GOAL_MINUTES)*100)}%`,
+              <div style={{ height:10, borderRadius:5, background:'rgba(255,255,255,0.08)', overflow:'hidden' }}>
+                <div style={{ height:'100%', borderRadius:5, width:`${pct}%`,
                   background: weeklyMins >= COACH_GOAL_MINUTES
                     ? 'linear-gradient(90deg, #047857, #10B981)'
                     : `linear-gradient(90deg, ${T.amber}, ${T.gold})`,
+                  boxShadow: weeklyMins >= COACH_GOAL_MINUTES
+                    ? '0 0 10px rgba(16,185,129,0.4)' : '0 0 8px rgba(255,210,60,0.3)',
                   transition:'width 600ms ease' }} />
               </div>
               {weeklyMins >= COACH_GOAL_MINUTES ? (
-                <div style={{ fontSize:11, fontWeight:700, color:'#10B981', marginTop:6 }}>
+                <div style={{ fontSize:13, fontWeight:700, color:'#10B981', marginTop:10 }}>
                   Coach review unlocked! Tap to claim your 60-sec review.
                 </div>
               ) : (
-                <div style={{ fontSize:11, fontWeight:600, color:T.muted, marginTop:6 }}>
-                  {COACH_GOAL_MINUTES - Math.round(weeklyMins)} more minutes to unlock
+                <div style={{ fontSize:12, fontWeight:600, color:T.muted, marginTop:10 }}>
+                  {COACH_GOAL_MINUTES - Math.round(weeklyMins)} more minutes to unlock your weekly review
                 </div>
               )}
             </div>
 
-            <div style={{ fontSize:11, fontWeight:800, color:T.muted, letterSpacing:0.8, textTransform:'uppercase', marginBottom:10 }}>How to earn fans</div>
+            <div style={{ fontSize:11, fontWeight:800, color:T.muted, letterSpacing:0.8,
+              textTransform:'uppercase', marginBottom:10 }}>What you get</div>
             {[
-              { label:'Full song', fans:FAN_REWARDS.fullSong, icon:'🎤' },
-              { label:'Section practice', fans:FAN_REWARDS.section, icon:'🎵' },
-              { label:'Arcade game', fans:FAN_REWARDS.arcade, icon:'🕹️' },
-              { label:'Drill / exercise', fans:FAN_REWARDS.drill, icon:'💨' },
+              { label:'60-second personalized review', desc:'AI coach analyzes your singing', icon:'🤖' },
+              { label:'Pitch & timing feedback', desc:'See where you nailed it', icon:'📊' },
+              { label:'Weekly progress report', desc:'Track your improvement over time', icon:'📈' },
             ].map(r => (
-              <div key={r.label} style={{ display:'flex', alignItems:'center', gap:10, padding:'10px 0',
+              <div key={r.label} style={{ display:'flex', alignItems:'center', gap:12, padding:'12px 0',
                 borderBottom:'1px solid rgba(255,255,255,0.06)' }}>
-                <span style={{ fontSize:18 }}>{r.icon}</span>
-                <span style={{ flex:1, fontSize:14, fontWeight:700, color:T.white }}>{r.label}</span>
-                <span style={{ fontSize:13, fontWeight:900, color:T.brand }}>+{r.fans} fans</span>
+                <span style={{ fontSize:20 }}>{r.icon}</span>
+                <div>
+                  <div style={{ fontSize:13, fontWeight:800, color:T.white }}>{r.label}</div>
+                  <div style={{ fontSize:11, fontWeight:600, color:T.muted, marginTop:1 }}>{r.desc}</div>
+                </div>
               </div>
             ))}
-          </>
+          </div>
           );
         })()}
 
@@ -404,12 +545,12 @@ function HudDetailSheet({ type, fans, superfans, weeklyMins, onClose, onPlayCutS
           const visibleCount = lvl >= 10 ? SUPERFAN_DEFS.length : LEVEL_THRESHOLDS[lvl];
           const visible = SUPERFAN_DEFS.slice(0, visibleCount);
           return (
-          <>
+          <div style={{ padding:'0 20px' }}>
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:4 }}>
               <div style={{ fontSize:20, fontWeight:900, color:T.white }}>The OG's</div>
               <div style={{ padding:'4px 10px', borderRadius:8, background:'rgba(255,105,0,0.15)',
                 border:'1px solid rgba(255,105,0,0.2)' }}>
-                <span style={{ fontSize:12, fontWeight:900, color:T.amber }}>Tier {lvl}</span>
+                <span style={{ fontSize:12, fontWeight:900, color:T.amber }}>Bar Lv.{lvl}</span>
               </div>
             </div>
             <div style={{ fontSize:12, fontWeight:600, color:'rgba(255,255,255,0.5)', marginBottom:6, lineHeight:1.5 }}>
@@ -417,7 +558,7 @@ function HudDetailSheet({ type, fans, superfans, weeklyMins, onClose, onPlayCutS
             </div>
             {nextThresh && (
               <div style={{ fontSize:11, fontWeight:700, color:T.gold, marginBottom:14 }}>
-                {nextThresh - superfans.length} more OG{nextThresh - superfans.length !== 1 ? "'s" : ''} to reach Tier {lvl+1}
+                {nextThresh - superfans.length} more OG{nextThresh - superfans.length !== 1 ? "'s" : ''} to reach Bar Lv.{lvl+1}
               </div>
             )}
             {visible.map(sf => {
@@ -458,7 +599,7 @@ function HudDetailSheet({ type, fans, superfans, weeklyMins, onClose, onPlayCutS
                 </div>
               );
             })}
-          </>
+          </div>
           );
         })()}
       </div>
@@ -520,13 +661,20 @@ function TodaySheet({ tasks, onClose, onGoTab }) {
   );
 }
 
-// ── Drag hook — tap vs drag with 5px threshold ──
-function useDrag(onTap) {
-  const posRef = React.useRef({ x: 0, y: 0 });
-  const [pos, setPos] = React.useState({ x: 0, y: 0 });
+// ── Drag hook — tap vs drag with 5px threshold, optional localStorage persistence ──
+function useDrag(onTap, persistKey) {
+  const saved = React.useMemo(() => {
+    if (!persistKey) return { x: 0, y: 0 };
+    try { const v = JSON.parse(localStorage.getItem(persistKey)); return v && typeof v.x === 'number' ? v : { x:0, y:0 }; }
+    catch { return { x: 0, y: 0 }; }
+  }, [persistKey]);
+  const posRef = React.useRef(saved);
+  const [pos, setPos] = React.useState(saved);
   const dragState = React.useRef(null);
   const tapCb = React.useRef(onTap);
   tapCb.current = onTap;
+  const keyRef = React.useRef(persistKey);
+  keyRef.current = persistKey;
 
   const onPointerDown = React.useCallback((e) => {
     e.currentTarget.setPointerCapture(e.pointerId);
@@ -547,6 +695,9 @@ function useDrag(onTap) {
     const d = dragState.current;
     dragState.current = null;
     if (d && !d.moved && tapCb.current) tapCb.current();
+    if (d && d.moved && keyRef.current) {
+      try { localStorage.setItem(keyRef.current, JSON.stringify(posRef.current)); } catch {}
+    }
   }, []);
 
   return { pos, onPointerDown, onPointerMove, onPointerUp };
@@ -554,7 +705,7 @@ function useDrag(onTap) {
 
 // ── The OG's — draggable photo wall overlay ──
 function PhotoWall({ superfans, barLevel, onTap }) {
-  const drag = useDrag(onTap);
+  const drag = useDrag(onTap, 'sos_og_wall_pos');
 
   const visibleCount = barLevel >= 10 ? SUPERFAN_DEFS.length : LEVEL_THRESHOLDS[barLevel];
   const visible = SUPERFAN_DEFS.slice(0, visibleCount);
@@ -564,8 +715,7 @@ function PhotoWall({ superfans, barLevel, onTap }) {
     <div
       onPointerDown={drag.onPointerDown} onPointerMove={drag.onPointerMove} onPointerUp={drag.onPointerUp}
       style={{
-        position:'absolute', top:`calc(28% + ${drag.pos.y}px)`, left:`calc(50% + ${drag.pos.x}px)`,
-        transform:'translateX(-50%)',
+        position:'absolute', top:`${72 + drag.pos.y}px`, left:`${12 + drag.pos.x}px`,
         zIndex:6, cursor:'grab', touchAction:'none',
         userSelect:'none',
       }}>
@@ -639,6 +789,101 @@ function DraggableChar({ who, src, height, side, baseStyle, speechChar, speechTe
   );
 }
 
+// ── Upbeat background music via Web Audio API ──
+function useBgMusic() {
+  const ctxRef = React.useRef(null);
+  const [blocked, setBlocked] = React.useState(false);
+
+  React.useEffect(() => {
+    function init() {
+      if (ctxRef.current) return;
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      ctxRef.current = ctx;
+
+      const master = ctx.createGain();
+      master.gain.value = 0.15;
+      master.connect(ctx.destination);
+
+      const bpm = 116;
+      const eighth = 60 / bpm / 2;
+
+      const prog = [
+        { bass:65.41, notes:[261.63, 329.63, 392, 493.88] },
+        { bass:55,    notes:[220, 261.63, 329.63, 392] },
+        { bass:73.42, notes:[293.66, 349.23, 440, 523.25] },
+        { bass:98,    notes:[246.94, 293.66, 349.23, 440] },
+      ];
+      const arp = [0, 2, 1, 3, 0, 3, 2, -1];
+      const bassHits = [0, 4, 6];
+      const melodyPat = [4, -1, 3, -1, 2, 3, -1, -1, 3, -1, 2, -1, 1, 0, -1, -1,
+                         2, -1, 3, 2, 1, -1, 0, -1, 1, -1, 2, -1, 3, -1, -1, -1];
+      const pentatonic = [261.63, 293.66, 329.63, 392, 440];
+
+      function tone(freq, type, vol, t, dur) {
+        if (t < ctx.currentTime - 0.1) return;
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.type = type;
+        o.frequency.value = freq;
+        g.gain.setValueAtTime(0, t);
+        g.gain.linearRampToValueAtTime(vol, t + 0.008);
+        g.gain.setValueAtTime(vol * 0.7, t + dur * 0.6);
+        g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+        o.connect(g); g.connect(master);
+        o.start(t); o.stop(t + dur + 0.02);
+      }
+
+      function scheduleLoop(t0) {
+        prog.forEach((ch, ci) => {
+          const bar = t0 + ci * 8 * eighth;
+          bassHits.forEach(s => tone(ch.bass, 'sine', 0.18, bar + s * eighth, eighth * 1.8));
+          arp.forEach((ni, s) => {
+            if (ni >= 0) tone(ch.notes[ni], 'triangle', 0.045, bar + s * eighth, eighth * 0.85);
+          });
+          ch.notes.forEach(f => tone(f * 0.5, 'triangle', 0.012, bar, eighth * 7.5));
+          for (let s = 0; s < 8; s++) {
+            const mi = ci * 8 + s;
+            const ni = melodyPat[mi % melodyPat.length];
+            if (ni >= 0) tone(pentatonic[ni] * 2, 'sine', 0.025, bar + s * eighth, eighth * 0.6);
+          }
+        });
+      }
+
+      const loopDur = prog.length * 8 * eighth;
+      let next = ctx.currentTime + 0.1;
+      function tick() {
+        while (next < ctx.currentTime + 4) { scheduleLoop(next); next += loopDur; }
+      }
+      tick();
+      const iv = setInterval(tick, 800);
+      ctx._iv = iv;
+      setBlocked(false);
+    }
+
+    try { init(); } catch(e) {}
+    if (ctxRef.current && ctxRef.current.state === 'suspended') {
+      setBlocked(true);
+      const unlock = () => {
+        if (ctxRef.current) ctxRef.current.resume().then(() => setBlocked(false));
+        window.removeEventListener('pointerdown', unlock, true);
+        window.removeEventListener('keydown', unlock, true);
+      };
+      window.addEventListener('pointerdown', unlock, true);
+      window.addEventListener('keydown', unlock, true);
+    }
+
+    return () => {
+      if (ctxRef.current) {
+        clearInterval(ctxRef.current._iv);
+        ctxRef.current.close();
+        ctxRef.current = null;
+      }
+    };
+  }, []);
+
+  return blocked;
+}
+
 // ── Bar Home Screen ──
 function BarHome({ fans, superfans, weeklyMins, onGoTab }) {
   const [speechChar, setSpeechChar] = React.useState(null);
@@ -656,27 +901,7 @@ function BarHome({ fans, superfans, weeklyMins, onGoTab }) {
 
   const dismissSpeech = () => { setSpeechChar(null); setSpeechText(''); };
 
-  // Bg ambience audio — autoplay on mount; retry on first interaction if browser blocks
-  const audioRef = React.useRef(null);
-  const [audioBlocked, setAudioBlocked] = React.useState(false);
-  React.useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    audio.volume = 0.3;
-    audio.play().then(() => {
-      setAudioBlocked(false);
-    }).catch(() => {
-      setAudioBlocked(true);
-      const unlock = () => {
-        audio.play().catch(() => {});
-        setAudioBlocked(false);
-        window.removeEventListener('pointerdown', unlock, true);
-        window.removeEventListener('keydown', unlock, true);
-      };
-      window.addEventListener('pointerdown', unlock, true);
-      window.addEventListener('keydown', unlock, true);
-    });
-  }, []);
+  const audioBlocked = useBgMusic();
 
   const barLevel = getBarLevel(superfans.length);
   const barBg = `assets/bars/bar-level-${barLevel}.jpg`;
@@ -685,7 +910,7 @@ function BarHome({ fans, superfans, weeklyMins, onGoTab }) {
 
   return (
     <div style={{ width:'100%', height:'100%', position:'relative', overflow:'hidden' }}>
-      <audio ref={audioRef} src="smooth_jazz_bar_crowd.wav" loop preload="auto" style={{ display:'none' }} />
+      {/* Music handled by useBgMusic() Web Audio hook */}
       {/* Bar scene background */}
       <div style={{ position:'absolute', inset:0 }}>
         <img src={barBg} alt={`Stu's Bar — Level ${barLevel}`}
@@ -740,7 +965,7 @@ function BarHome({ fans, superfans, weeklyMins, onGoTab }) {
         onTap={() => quip('zeke')} onDismiss={dismissSpeech} animDelay="0.3s" />
 
       {/* Clipboard — pinned top-right below HUD, Supercell quest-board style */}
-      <div style={{ position:'absolute', top:62, right:12, zIndex:11 }}>
+      <div style={{ position:'absolute', top:88, right:12, zIndex:11 }}>
         <div
           style={{
             cursor:'pointer', userSelect:'none',
@@ -751,7 +976,7 @@ function BarHome({ fans, superfans, weeklyMins, onGoTab }) {
           onPointerUp={e => { e.currentTarget.style.transform='scale(1)'; setShowToday(true); }}
           onPointerLeave={e => e.currentTarget.style.transform='scale(1)'}>
           <div style={{ position:'relative' }}>
-            <img src="nav-clipboard.png" alt="Today's Goals"
+            <img src="nav-clipboard.png?v=2" alt="Today's Goals"
               style={{ width:52, height:52, objectFit:'contain',
                 filter:'drop-shadow(0 3px 10px rgba(255,180,50,0.5))' }} />
             <div style={{ position:'absolute', top:-6, right:-6,
