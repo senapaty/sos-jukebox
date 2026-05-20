@@ -383,43 +383,131 @@ const SUPERFAN_QUIPS = {
   ],
 };
 
-// ── Cut-scene stories for each superfan ──
+// ── Cut-scene dialogs for each superfan (2-3 lines, tap to advance) ──
 const CUTSCENES = {
-  first_believer: "The door creaks open. A stocky bear in a faded band tee shuffles in, glances at the empty stools, and sits down. He heard someone was brave enough to sing in this dump. \"I believe in ya,\" he says, ordering a drink. He's not going anywhere.",
-  melody_mel: "A flash of pink feathers at the doorway. Melody Mel struts in wearing headphones like a crown. She heard a tune worth hearing — yours. \"Not bad,\" she says with a cool nod. \"Play it again.\"",
-  pitch_pete: "A burst of color lands on a bar stool. Pitch Pete, the parrot in a denim jacket covered in pins, cocks his head. \"You actually hit that note,\" he squawks, impressed. \"Most singers here can't do that.\"",
-  encore_enid: "Encore Enid, the fox in the sparkly top, slides through the door mid-song. \"I came back,\" she grins. \"Nobody makes me come back. You must be doing something right.\"",
-  standing_o_sam: "The floor shakes. Standing O Sam, all 400 pounds of gorilla in a varsity jacket, rises from his seat. He's clapping. Actually clapping. The whole bar turns to look. That's the highest honor.",
-  vinyl_vicky: "Vinyl Vicky was browsing the record bins when she heard your voice. The raccoon adjusts her scarf and smiles knowingly. \"You've got range, kid. I can tell.\"",
-  bass_drop_boris: "Boris the bulldog kicks the door open. Chain swinging, hoodie up. He drops into a seat and the bass in your voice makes him nod. \"Respect,\" he growls.",
-  harmony_hank: "An old owl in a bow tie settles onto the end stool. Hank has heard every singer in this town for fifty years. He adjusts his glasses, listens, and simply nods. That's all you need.",
-  treble_tina: "A calico cat in a beret hops onto the bar. Tina winks. \"Those high notes? Delicious. I had to come see for myself.\" She orders a saucer of milk and stays.",
-  mic_check_mike: "A rooster in a leather vest struts in at dawn. \"You're here every day,\" Mike crows. \"I respect the grind. Count me in.\"",
-  crescendo_carl: "The elephant squeezes through the door carefully. Carl closes his eyes and sways. \"Each time you sing, it's better than the last. That's rare.\"",
-  rhythm_ruby: "A blur of magenta leg warmers and long ears. Ruby the rabbit bounces through the door, already moving to the beat. \"I couldn't sit still!\" she laughs.",
-  falsetto_fred: "A giraffe in a turtleneck ducks under the door frame. Fred's eyes go wide when you hit the high note. \"How did you — I can barely reach that!\"",
-  alto_alice: "A deer in a folk cardigan steps in quietly. Alice doesn't need flashy entrances. \"I've heard you ten times now,\" she says softly. \"You're the real thing.\"",
-  beatbox_benny: "A frog in a snapback appears on the bar counter. Benny starts beatboxing along to your song. The crowd goes wild. He tips his cap.",
-  serenade_sally: "A white swan glides in, pearls glowing. Sally dabs her eye with a wing. \"That ballad,\" she whispers. \"You made me feel something. That hasn't happened in years.\"",
-  karaoke_king: "The door SLAMS open. A lion wearing an actual crown and cape strides in. The Karaoke King heard there's a challenger worthy of his presence. He sits, crosses his arms, and nods. \"Finally. A real singer.\"",
-  diva_diana: "Peacock feathers fill the doorway. Diana makes her entrance — slow, dramatic, fabulous. Fifteen songs you've done. She fans her feathers. \"You've earned my attention, darling.\"",
-  showstopper_steve: "A wolf in a studded jacket leans against the wall, watching from the shadows. Steve doesn't impress easy. Three standing ovations later, he pushes off the wall. \"Alright. You're legit.\"",
-  legendary_luna: "A golden glow fills the bar. Everyone falls silent. Luna, the legendary eagle in her star-studded cape, descends from myth into Stu's Bar. She's never been seen here before. \"I came for you,\" she says. The bar will never be the same.",
+  first_believer: [
+    "The door creaks open. A stocky bear in a faded band tee shuffles in and glances at the empty stools.",
+    "\"I heard someone was brave enough to sing in this dump. Had to see for myself.\"",
+    "He sits down and orders a drink. \"I believe in ya, kid. I'm not going anywhere.\"",
+  ],
+  melody_mel: [
+    "A flash of pink feathers at the doorway. Melody Mel struts in wearing headphones like a crown.",
+    "She tilts her head, listening. \"Hmm. That melody. You actually know what you're doing.\"",
+    "She slides onto a stool. \"Not bad. Play it again — I want to hear the chorus.\"",
+  ],
+  pitch_pete: [
+    "A burst of color lands on a bar stool. Pitch Pete, the parrot in a denim jacket, cocks his head.",
+    "\"BAWK! Hold on — you actually hit that note. Most singers here can't do that.\"",
+    "He ruffles his feathers approvingly. \"Alright, I'm adding you to my list. Don't disappoint.\"",
+  ],
+  encore_enid: [
+    "Encore Enid, the fox in the sparkly top, slides through the door mid-song.",
+    "\"I came back. I NEVER come back. Nobody makes me come back.\"",
+    "She grins, ears perked. \"You must be doing something right. One more song?\"",
+  ],
+  standing_o_sam: [
+    "The floor shakes. Standing O Sam, all 400 pounds of gorilla, rises from his seat.",
+    "He's clapping. Slowly at first, then thunderous. The whole bar turns to look.",
+    "\"That...\" *wipes eye with massive hand* \"...that was BEAUTIFUL.\"",
+  ],
+  vinyl_vicky: [
+    "Vinyl Vicky adjusts her scarf and leans against the record bins, listening.",
+    "\"This reminds me of a B-side from '74. Back when music meant something.\"",
+    "She smiles knowingly. \"You've got range, kid. Keep exploring it.\"",
+  ],
+  bass_drop_boris: [
+    "Boris the bulldog kicks the door open. Chain swinging, hoodie up.",
+    "He drops into a seat. The bass in your voice makes his chain rattle.",
+    "\"Respect.\" *single nod* That's the most words anyone's heard from Boris.",
+  ],
+  harmony_hank: [
+    "An old owl in a bow tie settles onto the end stool. He's been listening to singers for fifty years.",
+    "Hank adjusts his glasses, closes his eyes, and listens through an entire verse.",
+    "Then he simply nods. From Hank, that's a standing ovation.",
+  ],
+  treble_tina: [
+    "A calico cat in a beret hops onto the bar counter, tail swishing.",
+    "\"Those high notes? *chef's kiss* Magnifique! I had to come see for myself.\"",
+    "She orders a saucer of milk. \"I'm staying. Don't stop on my account.\"",
+  ],
+  mic_check_mike: [
+    "A rooster in a leather vest struts in as the sun comes up.",
+    "\"COCK-A-DOODLE-DO! Day seven! You showed up every. Single. Day.\"",
+    "He puffs his chest proudly. \"I respect the grind. Count me IN.\"",
+  ],
+  crescendo_carl: [
+    "The elephant squeezes through the door carefully, trying not to break anything.",
+    "Carl closes his eyes and sways. \"Each time you sing... it's better than the last.\"",
+    "A single tear rolls down. \"The crescendo is coming. I can feel it.\"",
+  ],
+  rhythm_ruby: [
+    "A blur of magenta leg warmers and long ears bursts through the door.",
+    "Ruby's already bouncing. \"I was three blocks away and I couldn't stop MOVING!\"",
+    "She's dancing between the tables. \"Your rhythm is CONTAGIOUS! Don't stop!\"",
+  ],
+  falsetto_fred: [
+    "A giraffe in a turtleneck ducks carefully under the door frame.",
+    "Fred's eyes go wide when you hit the high note. \"How did you— my neck is longer and I can barely reach that!\"",
+    "He adjusts his turtleneck nervously. \"Can you... teach me how you do that?\"",
+  ],
+  alto_alice: [
+    "A deer in a folk cardigan steps in quietly. No flashy entrance needed.",
+    "\"I've been listening from outside for ten songs now. Ten whole songs.\"",
+    "She takes a seat by the window. \"That's not luck. You're the real thing.\"",
+  ],
+  beatbox_benny: [
+    "A frog in a snapback appears on the bar counter out of nowhere.",
+    "He starts beatboxing along to your song. \"Pff-ts-ka-pff-ts!\" The crowd goes wild.",
+    "Benny tips his cap. \"Ribbit. I mean — that SLAPPED.\"",
+  ],
+  serenade_sally: [
+    "A white swan glides in, pearls softly glowing in the bar light.",
+    "Sally dabs her eye with a wing. \"That ballad... you made me feel something.\"",
+    "\"That hasn't happened in years.\" She settles in gracefully. \"Sing it again. Please.\"",
+  ],
+  karaoke_king: [
+    "The door SLAMS open. A lion wearing an actual crown and cape strides in.",
+    "The Karaoke King crosses his arms and surveys the bar. \"I heard there's a challenger.\"",
+    "He sits on the biggest stool. \"Finally. A real singer. The throne has room for two. Maybe.\"",
+  ],
+  diva_diana: [
+    "Peacock feathers fill the doorway. Diana makes her entrance — slow, dramatic, fabulous.",
+    "She fans her feathers and counts on her wing. \"Fifteen songs! The DEDICATION!\"",
+    "\"Fabulous recognizes fabulous, darling.\" *dramatic pause* \"And you. Are. FABULOUS.\"",
+  ],
+  showstopper_steve: [
+    "A wolf in a studded jacket leans against the wall, watching from the shadows.",
+    "Three standing ovations. Steve counts every one. Most singers don't even get one.",
+    "He pushes off the wall and walks over. \"Alright. You're legit.\" *fist bump*",
+  ],
+  legendary_luna: [
+    "A golden glow fills the bar. Everyone falls silent. Even Stu stops polishing glasses.",
+    "Luna, the legendary eagle in her star-studded cape, descends from myth itself.",
+    "\"They said I wasn't real. Then you started singing.\" She spreads her wings. \"I came for you.\"",
+  ],
 };
 
-// ── Cut-scene overlay ──
+// ── Cut-scene overlay — multi-dialog, tap to advance ──
 function CutScene({ superfan, onClose }) {
   if (!superfan) return null;
-  const text = CUTSCENES[superfan.id] || 'A new fan walks through the door...';
+  const lines = CUTSCENES[superfan.id] || ['A new fan walks through the door...'];
+  const [step, setStep] = React.useState(0);
+  const isLast = step >= lines.length - 1;
+
+  const advance = () => {
+    if (isLast) onClose();
+    else setStep(s => s + 1);
+  };
+
   return (
     <div style={{ position:'absolute', inset:0, zIndex:200, display:'flex', flexDirection:'column',
       justifyContent:'center', alignItems:'center' }}>
-      <div onClick={onClose} style={{ position:'absolute', inset:0,
-        background:'rgba(0,0,0,0.85)', backdropFilter:'blur(8px)', WebkitBackdropFilter:'blur(8px)' }} />
-      <div style={{ position:'relative', zIndex:1, display:'flex', flexDirection:'column',
-        alignItems:'center', padding:'32px 28px', maxWidth:320,
+      <div style={{ position:'absolute', inset:0,
+        background:'rgba(0,0,0,0.88)', backdropFilter:'blur(8px)', WebkitBackdropFilter:'blur(8px)' }} />
+      <div onClick={advance} style={{ position:'relative', zIndex:1, display:'flex', flexDirection:'column',
+        alignItems:'center', padding:'32px 28px', maxWidth:320, cursor:'pointer',
         animation:'popIn 0.4s cubic-bezier(0.34,1.56,0.64,1) both' }}>
-        <div style={{ width:100, height:100, borderRadius:'50%', overflow:'hidden',
+        <div style={{ width:110, height:110, borderRadius:'50%', overflow:'hidden',
           border:`3px solid ${superfan.color}`, boxShadow:`0 0 30px ${superfan.color}55`,
           marginBottom:16 }}>
           <img src={superfan.img} alt={superfan.name}
@@ -429,67 +517,72 @@ function CutScene({ superfan, onClose }) {
           {superfan.name}
         </div>
         <div style={{ fontSize:11, fontWeight:800, color:superfan.color, textTransform:'uppercase',
-          letterSpacing:1, marginBottom:16 }}>New OG Unlocked</div>
-        <div style={{ fontSize:13, fontWeight:600, color:'rgba(255,255,255,0.75)', lineHeight:1.7,
-          textAlign:'center', marginBottom:24 }}>{text}</div>
-        <div onClick={onClose} style={{
-          padding:'10px 32px', borderRadius:12, cursor:'pointer',
-          background:`linear-gradient(135deg, ${superfan.color}, ${superfan.color}cc)`,
-          boxShadow:`0 4px 16px ${superfan.color}44`,
-          fontSize:13, fontWeight:900, color:'white', letterSpacing:0.3,
-        }}>Nice</div>
+          letterSpacing:1, marginBottom:16 }}>
+          {step === 0 ? 'A new face at the bar...' : `${step + 1} / ${lines.length}`}
+        </div>
+        <div key={step} style={{ fontSize:14, fontWeight:600, color:'rgba(255,255,255,0.8)', lineHeight:1.7,
+          textAlign:'center', marginBottom:24, minHeight:48,
+          animation:'fadeUp 0.25s ease both' }}>
+          {lines[step]}
+        </div>
+        <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+          <div style={{
+            padding:'10px 32px', borderRadius:12,
+            background: isLast
+              ? `linear-gradient(135deg, ${superfan.color}, ${superfan.color}cc)`
+              : 'rgba(255,255,255,0.08)',
+            border: isLast ? 'none' : '1px solid rgba(255,255,255,0.12)',
+            boxShadow: isLast ? `0 4px 16px ${superfan.color}44` : 'none',
+            fontSize:13, fontWeight:900, color: isLast ? 'white' : T.muted, letterSpacing:0.3,
+          }}>
+            {isLast ? 'Nice' : 'Tap to continue'}
+          </div>
+        </div>
       </div>
     </div>
   );
 }
 
-// ── OG Detail — large portrait, tap-to-quip, play cutscene ──
-function OGDetail({ superfan, onClose, onPlayCutScene }) {
-  const [quip, setQuip] = React.useState(null);
-  const quipTimeout = React.useRef(null);
+// ── OG Detail — large portrait + random quip overlay ──
+function OGDetail({ superfan, onClose }) {
+  const [quip, setQuip] = React.useState(() => {
+    const q = SUPERFAN_QUIPS[superfan.id] || ["Hey there!"];
+    return q[Math.floor(Math.random() * q.length)];
+  });
 
-  const showQuip = () => {
-    const quips = SUPERFAN_QUIPS[superfan.id] || ["Hey there!"];
-    const text = quips[Math.floor(Math.random() * quips.length)];
-    setQuip(text);
-    clearTimeout(quipTimeout.current);
-    quipTimeout.current = setTimeout(() => setQuip(null), 4000);
+  const nextQuip = () => {
+    const q = SUPERFAN_QUIPS[superfan.id] || ["Hey there!"];
+    setQuip(q[Math.floor(Math.random() * q.length)]);
   };
-
-  React.useEffect(() => () => clearTimeout(quipTimeout.current), []);
 
   return (
     <div style={{ position:'absolute', inset:0, zIndex:150, display:'flex', flexDirection:'column',
       alignItems:'center', justifyContent:'center' }}>
       <div onClick={onClose} style={{ position:'absolute', inset:0,
-        background:'rgba(0,0,0,0.85)', backdropFilter:'blur(10px)', WebkitBackdropFilter:'blur(10px)' }} />
+        background:'rgba(0,0,0,0.82)', backdropFilter:'blur(10px)', WebkitBackdropFilter:'blur(10px)' }} />
 
       <div style={{ position:'relative', zIndex:1, display:'flex', flexDirection:'column',
-        alignItems:'center', padding:'24px 28px', maxWidth:340,
-        animation:'popIn 0.35s cubic-bezier(0.34,1.56,0.64,1) both' }}>
+        alignItems:'center', animation:'popIn 0.3s cubic-bezier(0.34,1.56,0.64,1) both' }}>
 
         {/* Speech bubble */}
-        {quip && (
-          <div onClick={() => setQuip(null)} style={{
-            position:'absolute', top:-10, left:'50%', transform:'translateX(-50%)',
-            background:'rgba(255,255,245,0.95)', borderRadius:16, padding:'12px 16px',
-            maxWidth:260, boxShadow:`0 4px 20px rgba(0,0,0,0.4), 0 0 20px ${superfan.color}22`,
-            animation:'speechIn 0.3s cubic-bezier(0.34,1.56,0.64,1) both',
-            cursor:'pointer', zIndex:5,
-          }}>
-            <div style={{ fontSize:13, fontWeight:700, color:'#2a1a08', lineHeight:1.5 }}>{quip}</div>
-            <div style={{ position:'absolute', bottom:-6, left:'50%', marginLeft:-6,
-              width:12, height:12, background:'rgba(255,255,245,0.95)',
-              transform:'rotate(45deg)', borderRadius:2 }} />
-          </div>
-        )}
+        <div onClick={nextQuip} style={{
+          background:'rgba(255,255,245,0.95)', borderRadius:16, padding:'12px 16px',
+          maxWidth:250, marginBottom:12, cursor:'pointer',
+          boxShadow:`0 4px 20px rgba(0,0,0,0.4)`,
+          animation:'speechIn 0.3s cubic-bezier(0.34,1.56,0.64,1) both',
+        }}>
+          <div style={{ fontSize:13, fontWeight:700, color:'#2a1a08', lineHeight:1.5 }}>{quip}</div>
+          <div style={{ position:'absolute', bottom:'-6px', left:'50%', marginLeft:-6,
+            width:12, height:12, background:'rgba(255,255,245,0.95)',
+            transform:'rotate(45deg)', borderRadius:2 }} />
+        </div>
 
-        {/* Portrait — tap to quip */}
-        <div onClick={showQuip} style={{
-          width:160, height:160, borderRadius:'50%', overflow:'hidden', cursor:'pointer',
+        {/* Portrait — tap for next quip */}
+        <div onClick={nextQuip} style={{
+          width:150, height:150, borderRadius:'50%', overflow:'hidden', cursor:'pointer',
           border:`4px solid ${superfan.color}`,
           boxShadow:`0 0 40px ${superfan.color}44, 0 8px 32px rgba(0,0,0,0.5)`,
-          marginBottom:16, transition:'transform 120ms ease',
+          marginBottom:14, transition:'transform 120ms ease',
         }}
           onPointerDown={e => e.currentTarget.style.transform='scale(0.95)'}
           onPointerUp={e => e.currentTarget.style.transform='scale(1)'}
@@ -498,52 +591,12 @@ function OGDetail({ superfan, onClose, onPlayCutScene }) {
             style={{ width:'100%', height:'100%', objectFit:'cover', pointerEvents:'none' }} />
         </div>
 
-        {/* Name + desc */}
-        <div style={{ fontSize:22, fontWeight:900, color:T.white, marginBottom:4, textAlign:'center',
-          textShadow:'0 2px 4px rgba(0,0,0,0.5)' }}>
-          {superfan.name}
-        </div>
-        <div style={{ fontSize:12, fontWeight:700, color:superfan.color, textTransform:'uppercase',
-          letterSpacing:1, marginBottom:6 }}>OG Superfan</div>
-        <div style={{ fontSize:12, fontWeight:600, color:'rgba(255,255,255,0.55)', textAlign:'center',
-          lineHeight:1.5, marginBottom:20, maxWidth:240 }}>
-          {superfan.desc}
-        </div>
-
-        {/* Tap hint */}
-        <div style={{ fontSize:11, fontWeight:700, color:'rgba(255,255,255,0.3)', marginBottom:16 }}>
-          Tap portrait to chat
-        </div>
-
-        {/* Action buttons */}
-        <div style={{ display:'flex', gap:12 }}>
-          <div onClick={() => onPlayCutScene(superfan)}
-            style={{
-              display:'flex', alignItems:'center', gap:8,
-              padding:'10px 20px', borderRadius:14, cursor:'pointer',
-              background:`linear-gradient(135deg, ${superfan.color}, ${superfan.color}cc)`,
-              boxShadow:`0 4px 16px ${superfan.color}44`,
-              transition:'transform 120ms ease',
-            }}
-            onPointerDown={e => e.currentTarget.style.transform='scale(0.93)'}
-            onPointerUp={e => e.currentTarget.style.transform='scale(1)'}
-            onPointerLeave={e => e.currentTarget.style.transform='scale(1)'}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="white">
-              <path d="M8 5v14l11-7z"/>
-            </svg>
-            <span style={{ fontSize:13, fontWeight:900, color:'white' }}>Play Story</span>
-          </div>
-          <div onClick={onClose}
-            style={{
-              padding:'10px 20px', borderRadius:14, cursor:'pointer',
-              background:'rgba(255,255,255,0.08)', border:'1px solid rgba(255,255,255,0.12)',
-              transition:'transform 120ms ease',
-            }}
-            onPointerDown={e => e.currentTarget.style.transform='scale(0.93)'}
-            onPointerUp={e => e.currentTarget.style.transform='scale(1)'}
-            onPointerLeave={e => e.currentTarget.style.transform='scale(1)'}>
-            <span style={{ fontSize:13, fontWeight:900, color:T.muted }}>Close</span>
-          </div>
+        <div style={{ fontSize:18, fontWeight:900, color:T.white, textAlign:'center',
+          textShadow:'0 2px 4px rgba(0,0,0,0.5)' }}>{superfan.name}</div>
+        <div style={{ fontSize:11, fontWeight:700, color:superfan.color, textTransform:'uppercase',
+          letterSpacing:1, marginTop:2 }}>OG Superfan</div>
+        <div style={{ fontSize:11, fontWeight:600, color:'rgba(255,255,255,0.3)', marginTop:10 }}>
+          Tap to chat · Tap outside to close
         </div>
       </div>
     </div>
@@ -818,10 +871,20 @@ function HudDetailSheet({ type, fans, superfans, weeklyMins, onClose, onPlayCutS
                     <div style={{ fontSize:11, fontWeight:600, color:'rgba(255,255,255,0.4)', marginTop:2 }}>{sf.desc}</div>
                   </div>
                   {earned && (
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-                      stroke="rgba(255,255,255,0.3)" strokeWidth="2" strokeLinecap="round">
-                      <path d="M9 18l6-6-6-6"/>
-                    </svg>
+                    <div onClick={(e) => { e.stopPropagation(); onPlayCutScene(sf); }}
+                      style={{
+                        width:32, height:32, borderRadius:'50%', flexShrink:0, cursor:'pointer',
+                        background:`${sf.color}22`, border:`1.5px solid ${sf.color}44`,
+                        display:'flex', alignItems:'center', justifyContent:'center',
+                        transition:'transform 120ms ease',
+                      }}
+                      onPointerDown={e => { e.stopPropagation(); e.currentTarget.style.transform='scale(0.85)'; }}
+                      onPointerUp={e => e.currentTarget.style.transform='scale(1)'}
+                      onPointerLeave={e => e.currentTarget.style.transform='scale(1)'}>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill={sf.color}>
+                        <path d="M8 5v14l11-7z"/>
+                      </svg>
+                    </div>
                   )}
                 </div>
               );
@@ -1232,11 +1295,9 @@ function BarHome({ fans, superfans, weeklyMins, onGoTab }) {
           onSelectOG={(sf) => { setHudSheet(null); setSelectedOG(sf); }} />
       )}
 
-      {/* OG detail overlay */}
+      {/* OG detail overlay — portrait + quip */}
       {selectedOG && (
-        <OGDetail superfan={selectedOG}
-          onClose={() => setSelectedOG(null)}
-          onPlayCutScene={(sf) => { setSelectedOG(null); setCutSceneSf(sf); }} />
+        <OGDetail superfan={selectedOG} onClose={() => setSelectedOG(null)} />
       )}
 
       {/* Cut-scene overlay */}
